@@ -1,9 +1,8 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import { Link, Routes, Route } from "react-router-dom";
-import viteLogo from '/vite.svg'
 import './App.css'
 import './main.css';
+
+import PhotoArchive from './pages/PhotoArchive'
+import { useState } from 'react'
 
 const slides = [
   {
@@ -48,109 +47,10 @@ function App() {
 
 
   return (
-    <>
-      <header className="site-header">
-        <div className="user">Stuart</div>
-        <nav className="nav">
-          <a className="nav-button" href="/explore">Explore/Random</a>
-          <a className="nav-button" href="/albums">My Albums</a>
-          <a className="nav-button" href="/login">Login?Profile</a>
-          <a
-            className="nav-button"
-            href="#"
-            onClick={(e) => { e.preventDefault(); setShowProject(v => !v); }}
-          >
-            Our Project
-          </a>
-        </nav>
-      </header>
-
-      {showProject && (
-        <div className="container">
-        <h1>CSc 47300: Website Design Idea</h1>
-
-        <h2>Goal</h2>
-        <p>
-          Our website is an interactive web application designed to provide users with a platform to store, share, and explore digital memories, photos, stories, and milestones. The platform allows users to maintain full control over the visibility of their content, offering privacy settings for individual posts, photos, and tags. Users can organize their content within friend groups and choose whether to make it public or keep it private. This application is intended for a broad audience, helping people preserve personal memories in a digital format while providing customizable privacy options.
-        </p>
-
-        <h2>Features</h2>
-        <ul>
-          <li>Users can choose to keep their account or content public, private, or restricted.</li>
-            <li>Ability to create and manage friend groups, where users can control the visibility of their posts within specific circles.</li>
-            <li>Randomizer for discovering content from other users, with options to shuffle through posts or memories.</li>
-            <li>Full-page sliders and customizable layouts for presenting memories in an engaging format.</li>
-            <li>Option to generate private or public sharing links for specific content.</li>
-        </ul>
-
-        <h2>Target Audience</h2>
-        <p>
-            This application is ideal for anyone looking to digitize their memories while retaining control over their privacy. It can also be useful for friends, families, and communities looking to preserve shared experiences.
-        </p>
-      
-        </div>
-      )}
-
-      
-      <section className="wide home-hero">
-        <h1>Welcome! Take a Peek!</h1>
-        <p>
-          Blah blah blah, have fun and send photos. Have a peek………
-        </p>
-
-        <h2 className="section-title">&lt;Group Name&gt; Recent Photos Posted</h2>
-
-        <div className="carousel-wrap">
-          <div className="viewport">
-            <div className="track" style={{ transform: `translateX(-${idx * 100}%)` }}>
-              {slides.map((s, i) => (
-                <figure key={i} className="slide">
-                  <img src={s.src} alt={s.caption} />
-                  <figcaption className="overlay">
-                    <span className="avatar">👤</span>
-                    <span className="cap">{s.caption}</span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-
-            {/* arrows INSIDE the image */}
-            <button className="chev left"  onClick={prev}  aria-label="Previous slide"></button>
-            <button className="chev right" onClick={next} aria-label="Next slide"></button>
-          </div>
-        </div>
-
-        <div className="dots">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              className={i === idx ? "dot active" : "dot"}
-              onClick={() => setIdx(i)}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-        <section className="albums">
-        <h2>Albums</h2>
-
-        <div className="albums-grid">
-          {albums.map((a) => (
-            <article className="album-card" key={a.title}>
-              <img src={a.cover} alt={a.title} />
-              <h3>{a.title}</h3>
-              <div className="album-members">
-                <span className="avatar a1">👥</span>
-                <span className="avatar a2">👤</span>
-                <span className="avatar a3">👤</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      </section>
-    </>
-  );
+    <div className="app-container">
+      <PhotoArchive />
+    </div>
+  )
 }
 
-export default App
+export default App;
