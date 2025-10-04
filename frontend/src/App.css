@@ -16,15 +16,15 @@
 .user {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a; 
+  color: #0f172a;
 }
 
 
 .nav {
   display: flex;
   align-items: center;
-  gap: 0.6rem;              
-  flex-wrap: wrap;         
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .nav-button {
