@@ -2,8 +2,61 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
 }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a; 
+}
+
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;              
+  flex-wrap: wrap;         
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0; 
+  background: #f8fafc;      
+  color: #0f172a;
+  text-decoration: none;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 120ms ease, border-color 120ms ease,
+              transform 80ms ease;
+}
+
+.nav-button:hover {
+  background: #eef2ff;    
+  border-color: #c7d2fe;
+}
+
+.nav-button:active {
+  transform: translateY(1px);
+}
+
+.nav-button:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
 
 .logo {
   height: 6em;

@@ -2,34 +2,47 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import './main.css';
+
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
+      <header className="site-header">
+        <div className="user">Stuart</div>
+        <nav className="nav">
+          <a className="nav-button" href="/explore">Explore/Random</a>
+          <a className="nav-button" href="/albums">My Albums</a>
+          <a className="nav-button" href="/login">Login?Profile</a>
+        </nav>
+      </header>
+
+      <div className="container">
+        <h1>CSc 47300: Website Design Idea</h1>
+
+        <h2>Goal</h2>
         <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+          Our website is an interactive web application designed to provide users with a platform to store, share, and explore digital memories, photos, stories, and milestones. The platform allows users to maintain full control over the visibility of their content, offering privacy settings for individual posts, photos, and tags. Users can organize their content within friend groups and choose whether to make it public or keep it private. This application is intended for a broad audience, helping people preserve personal memories in a digital format while providing customizable privacy options.
+        </p>
+
+        <h2>Features</h2>
+        <ul>
+          <li>Users can choose to keep their account or content public, private, or restricted.</li>
+            <li>Ability to create and manage friend groups, where users can control the visibility of their posts within specific circles.</li>
+            <li>Randomizer for discovering content from other users, with options to shuffle through posts or memories.</li>
+            <li>Full-page sliders and customizable layouts for presenting memories in an engaging format.</li>
+            <li>Option to generate private or public sharing links for specific content.</li>
+        </ul>
+
+        <h2>Target Audience</h2>
+        <p>
+            This application is ideal for anyone looking to digitize their memories while retaining control over their privacy. It can also be useful for friends, families, and communities looking to preserve shared experiences.
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
 export default App
