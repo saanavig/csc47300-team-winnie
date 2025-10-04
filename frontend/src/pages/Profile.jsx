@@ -7,16 +7,16 @@ export default function Profile() {
     const [profile] = useState({
         name: 'Stuart',
         bio: 'Digital memory keeper. Loves photos, stories, and cats.',
-        avatar: 'https://via.placeholder.com/120',
+        avatar: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop',
         friends: ['Alice', 'Bob', 'Charlie', 'Dana']
     });
 
     const [showFriends, setShowFriends] = useState(false);
 
     const [albums] = useState([
-        { title: 'Vacation 2025', cover: 'https://via.placeholder.com/300x200' },
-        { title: 'Cats & Dogs', cover: 'https://via.placeholder.com/300x200' },
-        { title: 'Graduation', cover: 'https://via.placeholder.com/300x200' }
+        { title: 'Vacation 2025', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' },
+        { title: 'Cats & Dogs', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' },
+        { title: 'Graduation', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' }
     ]);
 
     return (
