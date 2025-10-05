@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import PhotoArchive from './pages/PhotoArchive';
 import Profile from './pages/Profile';
 import ProjectInfo from './pages/ProjectInfo';
+import Explore from './pages/Explore';
 import React from 'react';
 
 function App() {
@@ -18,7 +19,7 @@ function App() {
         <Routes>
           <Route  path="/" element={<HomePage />} />
           <Route path="/albums" element={<PhotoArchive />} />
-          {/* <Route path="/explore" element={<Explore />} /> */}
+          <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/project" element={<ProjectInfo />} />
         </Routes>
