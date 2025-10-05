@@ -1,2 +1,0 @@
-An interactive web application designed to provide users with a platform to store, share, and explore digital memories, photos, stories, and milestones. The platform allows users to maintain full control over the visibility of their content, offering privacy settings for individual posts, photos, and tags. Users can organize their content within friend groups and choose whether to make it public or keep it private. This application is intended for a broad audience, helping people preserve personal memories in a digital format while providing customizable privacy options.
-

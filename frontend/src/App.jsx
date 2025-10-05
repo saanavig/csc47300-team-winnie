@@ -2,7 +2,6 @@ import './App.css';
 
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import Explore from './pages/HomePage';
 import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
 import PhotoArchive from './pages/PhotoArchive';
