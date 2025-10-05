@@ -1,4 +1,4 @@
-import '../styles/Explore.css';
+import '../styles/HomePage.css';
 
 import ImageSlider from '../components/ImageSlider'
 import { useState } from 'react';
@@ -46,7 +46,7 @@ const albums = [
 ];
 
 
-export default function Explore() {
+export default function HomePage() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const prev = () => setCurrentIndex(i => (i === 0 ? slides.length - 1 : i - 1));
@@ -54,7 +54,12 @@ export default function Explore() {
 
     return (
     <div className="explore-page">
-        <h1>Explore Memories</h1>
+
+        <h1>Welcome! Take a Peek!</h1>
+            <p>Blah blah blah, have fun and send photos. Have a peek………</p>
+            <br></br>
+
+            <h2 className="section-title">&lt;Group Name&gt; Recent Photos Posted</h2>
 
         {/* Slider */}
         <section className="slider-section">
@@ -69,11 +74,19 @@ export default function Explore() {
         {/* Albums */}
         <section className="albums-section">
         <h2>Recent Albums</h2>
+
         <div className="albums-grid">
             {albums.map((album) => (
             <div key={album.id} className="album-card">
                 <img src={album.url} alt={album.title} />
                 <h3>{album.title}</h3>
+
+            <div className="album-members">
+                <span className="avatar a1">👥</span>
+                <span className="avatar a2">👤</span>
+                <span className="avatar a3">👤</span>
+            </div>
+
                 {album.tags && album.tags.length > 0 && (
                 <div className="album-tags">
                     {album.tags.map((tag) => (
