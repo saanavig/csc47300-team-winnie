@@ -31,3 +31,13 @@
     height: 400px;
     border-radius: 8px;
 }
+
+.avatar {
+    width: 44px; height: 44px;
+    border-radius: 999px;
+    display: grid; place-items: center;
+    font-size: 20px;
+}
+.avatar.a1 { background: #e5e7eb; color: #0f172a; } /* grey */
+.avatar.a2 { background: #ef4444; color: #fff; }    /* red */
+.avatar.a3 { background: #4338ca; color: #fff; }    /* indigo */

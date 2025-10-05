@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import PhotoUploader from '../components/PhotoUploader';
-import PhotoGrid from '../components/PhotoGrid';
-import TagFilter from '../components/TagFilter';
-import ImageSlider from '../components/ImageSlider';
 import '../styles/PhotoArchive.css';
+
+import { useEffect, useState } from 'react';
+
+import ImageSlider from '../components/ImageSlider';
+import PhotoGrid from '../components/PhotoGrid';
+import PhotoUploader from '../components/PhotoUploader';
+import TagFilter from '../components/TagFilter';
 
 function PhotoArchive() {
   // We'll use localStorage to persist photos for now

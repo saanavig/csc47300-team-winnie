@@ -2,7 +2,8 @@ import './App.css';
 
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import Explore from './pages/Explore';
+import Explore from './pages/HomePage';
+import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
 import PhotoArchive from './pages/PhotoArchive';
 import Profile from './pages/Profile';
@@ -16,8 +17,9 @@ function App() {
         <Navbar />
 
         <Routes>
-          <Route path="/" element={<PhotoArchive />} />
-          <Route path="/explore" element={<Explore />} />
+          <Route  path="/" element={<HomePage />} />
+          <Route path="/albums" element={<PhotoArchive />} />
+          {/* <Route path="/explore" element={<Explore />} /> */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/project" element={<ProjectInfo />} />
         </Routes>
