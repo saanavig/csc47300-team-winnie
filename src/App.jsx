@@ -1,48 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import './main.css';
+
+import PhotoArchive from './pages/PhotoArchive'
+import { useState } from 'react'
+
+const slides = [
+  {
+    src: "https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80&w=1600&auto=format&fit=crop",
+    caption: "Havana Oh nah nah, half my heart is in havana",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop",
+    caption: "Summer light over linen",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop",
+    caption: "Afternoon still life",
+  },
+];
+
+const albums = [
+  {
+    title: "Aliens stole my home",
+    cover:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    title: "Children are Terrifying",
+    cover:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    title: "Troeger",
+    cover:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop",
+  },
+];
 
 
 function App() {
   const [count, setCount] = useState(0)
+  const [idx, setIdx] = useState(0);
+  const prev = () => setIdx(i => (i === 0 ? slides.length - 1 : i - 1));
+  const next = () => setIdx(i => (i === slides.length - 1 ? 0 : i + 1));
+  const [showProject, setShowProject] = useState(false);
+
 
   return (
-    <>
-      <header className="site-header">
-        <div className="user">Stuart</div>
-        <nav className="nav">
-          <a className="nav-button" href="/explore">Explore/Random</a>
-          <a className="nav-button" href="/albums">My Albums</a>
-          <a className="nav-button" href="/login">Login?Profile</a>
-        </nav>
-      </header>
-
-      <div className="container">
-        <h1>CSc 47300: Website Design Idea</h1>
-
-        <h2>Goal</h2>
-        <p>
-          Our website is an interactive web application designed to provide users with a platform to store, share, and explore digital memories, photos, stories, and milestones. The platform allows users to maintain full control over the visibility of their content, offering privacy settings for individual posts, photos, and tags. Users can organize their content within friend groups and choose whether to make it public or keep it private. This application is intended for a broad audience, helping people preserve personal memories in a digital format while providing customizable privacy options.
-        </p>
-
-        <h2>Features</h2>
-        <ul>
-          <li>Users can choose to keep their account or content public, private, or restricted.</li>
-            <li>Ability to create and manage friend groups, where users can control the visibility of their posts within specific circles.</li>
-            <li>Randomizer for discovering content from other users, with options to shuffle through posts or memories.</li>
-            <li>Full-page sliders and customizable layouts for presenting memories in an engaging format.</li>
-            <li>Option to generate private or public sharing links for specific content.</li>
-        </ul>
-
-        <h2>Target Audience</h2>
-        <p>
-            This application is ideal for anyone looking to digitize their memories while retaining control over their privacy. It can also be useful for friends, families, and communities looking to preserve shared experiences.
-        </p>
-      </div>
-    </>
-  );
+    <div className="app-container">
+      <PhotoArchive />
+    </div>
+  )
 }
 
-export default App
+export default App;

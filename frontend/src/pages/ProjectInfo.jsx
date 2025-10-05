@@ -1,17 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">    <link rel="stylesheet" href="main.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>winnie</title>
-</head>
-<body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-</body>
-<!-- <body>
-    <div class="container">
+export default function ProjectInfo() {
+return (
+    <div className="container">
         <h1>CSc 47300: Website Design Idea</h1>
 
         <h2>Goal</h2>
@@ -33,5 +22,5 @@
             This application is ideal for anyone looking to digitize their memories while retaining control over their privacy. It can also be useful for friends, families, and communities looking to preserve shared experiences.
         </p>
     </div>
-</body> -->
-</html>
+);
+}
