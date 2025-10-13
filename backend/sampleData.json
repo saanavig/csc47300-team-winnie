@@ -1,0 +1,37 @@
+{
+    "users": [
+        {
+        "id": 1,
+        "name": "Saanavi Goyal",
+        "email": "saanavi@example.com",
+        "profilePic": "https://example.com/avatar1.jpg",
+        "joinedAlbums": [1, 2],
+        "createdAlbums": [1],
+        "dateJoined": "2025-07-01T12:00:00Z"
+        }
+    ],
+    "albums": [
+        {
+        "id": 1,
+        "title": "Summer Memories",
+        "description": "Photos from our summer trip to Havana",
+        "coverPhoto": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80",
+        "ownerId": 1,
+        "contributors": [1, 2, 3],
+        "photos": [101, 102],
+        "tags": ["travel", "friends", "summer"],
+        "createdAt": "2025-07-02T10:00:00Z"
+        }
+    ],
+    "photos": [
+        {
+        "id": 101,
+        "albumId": 1,
+        "uploaderId": 1,
+        "url": "https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80",
+        "caption": "Havana Oh nah nah",
+        "tags": ["city", "sunset", "vibe"],
+        "timestamp": "2025-07-02T10:30:00Z"
+        }
+    ]
+}
