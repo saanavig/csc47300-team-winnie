@@ -1,0 +1,111 @@
+/* Background setup */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Poppins", sans-serif;
+    background: url("https://images.unsplash.com/photo-1587161584760-f51779fb276a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2940")
+    no-repeat center center/cover;
+  }
+  
+  .glass-box {
+    width: 450px;
+    padding: 2.5rem 2.5rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: hsl(0, 0%, 100%);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+
+  /* Heading */
+  .glass-box h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  
+  /* Input fields */
+  .input-field {
+    position: relative;
+    margin: 1rem 0;
+  }
+  
+  .input-field input {
+    width: 100%;
+    padding: 0.8rem 2.5rem 0.8rem 1rem;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 1rem;
+  }
+  
+  .input-field input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  
+  /* Remember me & Forgot Password */
+  .options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  
+  .options a {
+    color: #fff;
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  
+  .options a:hover {
+    opacity: 1;
+  }
+  
+  /* Button */
+  button {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  button:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Register link */
+  .register-text {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .register-text a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
