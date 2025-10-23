@@ -33,3 +33,5 @@ frontend/build/
 # Env
 .env
 backend/.env
+winnie/
+venv/
