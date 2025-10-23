@@ -9,6 +9,8 @@ import Profile from './pages/Profile';
 import ProjectInfo from './pages/ProjectInfo';
 import Explore from './pages/Explore';
 import React from 'react';
+import LoginPage from './pages/LoginPage';
+
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/project" element={<ProjectInfo />} />
+          <Route path="/login" element={<LoginPage />} />
+          
         </Routes>
       </div>
     </Router>
