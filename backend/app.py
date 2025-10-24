@@ -12,7 +12,7 @@ CORS(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
-print("JWT key loaded:", os.getenv("JWT_SECRET_KEY"))
+# print("JWT key loaded:", os.getenv("JWT_SECRET_KEY"))
 
 
 client = MongoClient(os.getenv("MONGO_URI"))
