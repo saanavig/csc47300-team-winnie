@@ -58,15 +58,18 @@ def signup():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
-    email = data.get("email")
+    identifier = data.get("email") or data.get("username")
     password = data.get("password")
 
-    if not email or not password:
-        return jsonify({"error": "Email and password are required"}), 400
+    if not identifier or not password:
+        return jsonify({"error": "Email/Username and password are required"}), 400
 
-    user = users_collection.find_one({"email": email})
+    user = users_collection.find_one({
+        "$or": [{"email": identifier}, {"username": identifier}]
+    })
+
     if not user or not check_password_hash(user["password"], password):
-        return jsonify({"error": "Invalid email or password"}), 401
+        return jsonify({"error": "Invalid email/username or password"}), 401
 
     access_token = create_access_token(identity=user["username"])
 
@@ -74,6 +77,7 @@ def login():
         "message": "Login successful!",
         "token": access_token
     }), 200
+
 
 @app.route("/profile", methods=["GET"])
 @jwt_required()

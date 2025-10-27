@@ -2,15 +2,15 @@ import './App.css';
 
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
+import Explore from './pages/Explore';
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import PhotoArchive from './pages/PhotoArchive';
 import Profile from './pages/Profile';
 import ProjectInfo from './pages/ProjectInfo';
-import Explore from './pages/Explore';
 import React from 'react';
-import LoginPage from './pages/LoginPage';
-
+import SignupPage from './pages/SignupPage';
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/project" element={<ProjectInfo />} />
           <Route path="/login" element={<LoginPage />} />
-          
+          <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </div>
     </Router>
