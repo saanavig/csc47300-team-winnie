@@ -1,5 +1,8 @@
-import React, { useState } from "react";
 import "../styles/LoginPage.css";
+
+import React, { useState } from "react";
+
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,11 +27,9 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // ✅ Store the JWT token
         localStorage.setItem("token", data.token);
         alert("Login successful!");
         console.log("JWT Token:", data.token);
-        // redirect or update app state if needed
       } else {
         setError(data.error || "Login failed");
       }
@@ -48,10 +49,10 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="input-field">
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
+              placeholder="Email or Username"
               required
             />
           </div>
@@ -80,7 +81,7 @@ export default function LoginPage() {
           </button>
 
           <p className="register-text">
-            Don’t have an account? <a href="#">Register</a>
+            Don’t have an account? <Link to="/signup">Register</Link>
           </p>
         </form>
       </div>
