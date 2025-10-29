@@ -16,6 +16,14 @@ backend/node_modules/
 dist
 dist-ssr
 frontend/build/
+frontend/.vite/
+frontend/.parcel-cache/
+frontend/.next/
+
+# TypeScript
+*.tsbuildinfo
+*.tscache
+*.d.ts.map
 
 # Editor directories and files
 .vscode/*
@@ -33,5 +41,15 @@ frontend/build/
 # Env
 .env
 backend/.env
+
+# Python / backend
 winnie/
 venv/
+__pycache__/
+*.pyc
+
+# Coverage / test
+coverage/
+*.coverage
+*.pytest_cache
+jest-cache/

@@ -4,10 +4,10 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import Explore from './pages/Explore';
 import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './types/LoginPage';
 import Navbar from './components/Navbar';
 import PhotoArchive from './pages/PhotoArchive';
-import Profile from './pages/Profile';
+import Profile from './types/Profile';
 import ProjectInfo from './pages/ProjectInfo';
 import React from 'react';
 import SignupPage from './pages/SignupPage';
