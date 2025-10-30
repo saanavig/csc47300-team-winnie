@@ -15,7 +15,7 @@ jwt = JWTManager(app)
 # print("JWT key loaded:", os.getenv("JWT_SECRET_KEY"))
 
 
-client = MongoClient(os.getenv("MONGO_URI"))
+client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True)
 db = client["project-winnie"]
 users_collection = db["users"]
 

@@ -10,7 +10,7 @@ export default function Navbar() {
             <Link to="/explore" className="nav-button">Explore</Link>
             <Link to="/albums" className="nav-button">My Albums</Link>
             <Link to="/profile" className="nav-button">My Profile</Link>
-            <Link to="/project" className="nav-button">Our Project</Link>
+            {/* <Link to="/project" className="nav-button">Our Project</Link> */}
             <Link to="/login" className="nav-button">Login</Link>
         </nav>
         </header>
