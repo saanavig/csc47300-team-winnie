@@ -54,22 +54,29 @@
   margin: 0 0 1rem;
 }
 
-/* avatars */
+/* avatars (profile pictures) */
 .avatars {
   display: flex;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 0.35rem;
   margin-bottom: 1rem;
 }
 
 .avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  display: inline-block;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
 }
-.avatar.a1 { background: #d1d5db; } /* gray */
-.avatar.a2 { background: #ef4444; } /* red */
-.avatar.a3 { background: #4f46e5; } /* indigo */
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 /* button */
 .btn {
@@ -82,7 +89,7 @@
   font-size: 0.95rem;
   cursor: pointer;
 }
-.btn:hover { opacity: 0.9; }
+.btn:hover {background: #734791;}
 
 /* --- Most Viewed --- */
 .most-viewed {
@@ -164,12 +171,12 @@
 /* Hero Section */
 .explore-hero {
   position: relative;
-  background-image: url("https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1600&auto=format&fit=crop"); /* replace with your image */
+  background-image: url("https://www.ccny.cuny.edu/sites/default/files/styles/large/public/CCNY%20Quad-2.jpg?itok=FCumZPhh"); 
   background-size: cover;
   background-position: center;
   border-radius: 16px;
-  margin: 2rem 0 7rem;
-  min-height: 320px;
+  margin: 2rem 0 2.8rem;
+  min-height: 240px;
 
   display: flex;
   align-items: center;
@@ -178,11 +185,14 @@
 }
 
 .hero-overlay {
-  background: rgba(0, 0, 0, 0.5); /* semi-transparent dark overlay */
-  padding: 3rem 2rem;
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1.5rem 2.5rem;
+  border-radius: 14px;
   color: #fff;
-  max-width: 700px;
+  width: 80%;
+  max-width: 850px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .hero-overlay h2 {
