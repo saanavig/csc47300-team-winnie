@@ -9,7 +9,7 @@ interface LoginResponse {
     error?: string;
     }
 
-    export default function LoginPage(): JSX.Element {
+    export default function LoginPage(){
     const [identifier, setIdentifier] = useState<string>(""); // username or email
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
