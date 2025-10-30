@@ -1,70 +1,178 @@
 .profile-page {
-    max-width: 1100px;
-    margin: 2rem auto;
-    padding: 0 16px;
+  --text: #111827;
+  --text-weak: #6b7280;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --accent-ring: rgba(37,99,235,0.25);
+
+  max-width: 980px;
+  margin: 2.5rem auto;
+  padding: 0 20px;
+  color: var(--text);            
+  background: #fff;             
 }
 
-.profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
+/* --- Header --- */
+.profile-page .profile-header {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.25rem;
+  
 }
 
-.profile-info {
-    flex: 1;
+.profile-page .profile-avatar {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  justify-self: end; /* keeps avatar to the right column edge */
 }
 
-.profile-info h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+.profile-page .avatar-wrap {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(60% 60% at 50% 40%, var(--accent-ring), transparent);
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
 }
 
-.profile-info p {
-    margin-bottom: 1rem;
+.profile-page .avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--border);
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.profile-page .profile-avatar:hover .avatar-img {
+  transform: scale(1.015);
+  box-shadow: 0 0 0 6px var(--accent-ring);
+  filter: saturate(1.05);
+}
+.profile-page .profile-avatar:hover .avatar-wrap { opacity: 1; }
+
+.profile-page .profile-header-main { display: flex; flex-direction: column; gap: .75rem; }
+
+.profile-page .name-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: flex-start; }
+
+.profile-page .profile-name {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.2;
+  font-size: clamp(1.4rem, 2vw + 1rem, 2rem);
 }
 
-.profile-info button {
-    padding: 0.5rem 1rem;
-    margin-bottom: 1rem;
-    cursor: pointer;
+.profile-page .header-actions { display: flex; gap: .5rem; margin-left: auto; transform: translateX(-40px);}
+
+.profile-page .follow-btn,
+.profile-page .secondary-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #f9fafb;
+  color: var(--text);
+  padding: .5rem .9rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+}
+.profile-page .follow-btn:hover,
+.profile-page .secondary-btn:hover {
+  transform: translateY(-1px);
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+.profile-page .follow-btn { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.profile-page .follow-btn.is-following { background: #fff; color: var(--text); border-color: var(--border); }
+
+.profile-page .stats-row {
+  display: flex; gap: 1.75rem; padding: 0; margin: .25rem 0;
+  list-style: none; color: var(--text-weak);
+}
+.profile-page .stats-row li strong { color: var(--text); margin-right: .35rem; }
+
+.profile-page .bio { color: var(--text); }
+
+/* Friends */
+.profile-page .friends-list {
+  display: flex; gap: .5rem .75rem; flex-wrap: wrap;
+  list-style: none; padding: 0; margin: .5rem 0 0 0;
+}
+.profile-page .friends-list li {
+  padding: .35rem .6rem; border: 1px solid var(--border);
+  border-radius: 999px; background: #fff; color: var(--text-weak);
+  font-size: .9rem;
 }
 
-.friends-list {
-    list-style: none;
-    padding-left: 0;
+/* --- Tabs --- */
+.profile-page .tabs-bar {
+  display: flex; justify-content: center; gap: 1rem;
+  border-bottom: 1px solid var(--border); margin: 1rem 0 1.25rem;
+}
+.profile-page .tab {
+  appearance: none; background: transparent; border: none;
+  color: var(--text-weak); font-weight: 600; letter-spacing: .02em;
+  padding: .75rem 1rem; cursor: pointer; position: relative;
+}
+.profile-page .tab.active { color: var(--text); }
+.profile-page .tab.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2px; background: var(--text);
 }
 
-.friends-list li {
-    margin-bottom: 0.5rem;
+/* --- Albums --- */
+.profile-page .album-meta {
+  padding: 12px 14px 18px;
 }
 
-.profile-avatar img {
-    width: 120px;
-    height: 120px;
-    border-radius: 999px;
-    object-fit: cover;
+.profile-page .album-title {
+  line-height: 1.3;
+  color: var(--text);
+  margin: 6px 4px 8px;
+  font-size: 0.95rem;
 }
 
-.profile-albums h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+.profile-page .album-avatars {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
 }
 
-.albums-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
+.profile-page .album-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #fff;      
+  margin-left: -10px;         
+  box-shadow: 0 0 0 1px var(--border);
+  transition: transform 0.2s ease;
 }
 
-.album-card img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 12px;
+.profile-page .album-avatar:first-child {
+  margin-left: 0;
 }
 
-.album-card h3 {
-    margin-top: 0.5rem;
-    font-size: 1.2rem;
+.profile-page .album-avatar:hover {
+  transform: translateY(-2px) scale(1.05);
+  z-index: 2;
+}
+
+.profile-page .albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 19px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .profile-page .profile-header { grid-template-columns: 1fr; gap: 1rem; }
+  .profile-page .profile-avatar { width: 100px; height: 100px; justify-self: center; }
+  .profile-page .stats-row { gap: 1rem; }
 }
