@@ -10,6 +10,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const [imageUrl, setImageUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
   const [tags, setTags] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
@@ -17,6 +18,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
+      setFileName(selectedFile.name);
 
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -44,7 +46,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
       .filter((tag) => tag);
 
     const newPhoto: Photo = {
-      id: Date.now().toString(), // Changed to string
+      id: Date.now().toString(),
       url: uploadType === "file" ? previewUrl : imageUrl,
       tags: tagsArray,
       uploadDate: new Date().toISOString(),
@@ -55,11 +57,12 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     // Reset form
     setImageUrl("");
     setFile(null);
+    setFileName("");
     setTags("");
     setPreviewUrl("");
   };
 
-  const fileInputKey = file ? "has-file" : "no-file";
+  // const fileInputKey = file ? "has-file" : "no-file";
 
   return (
     <div className="photo-uploader">
@@ -89,11 +92,12 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
             <input
               type="file"
               id="photo-file"
-              key={fileInputKey}
+              // key={fileInputKey}
               accept="image/*"
               onChange={handleFileChange}
               required
             />
+            {fileName && <p className="selected-filename">Selected file: {fileName}</p>}
           </div>
         ) : (
           <div className="form-group">
