@@ -86,7 +86,7 @@ interface LoginResponse {
             </button>
 
             <p className="register-text">
-                Don’t have an account? <Link to="/signup">Register</Link>
+                Don't have an account? <Link to="/signup">Register</Link>
             </p>
             </form>
         </div>

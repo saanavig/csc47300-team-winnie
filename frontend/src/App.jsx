@@ -1,16 +1,15 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './types/HomePage';
+import Albums from './types/Albums';
+import PhotoArchive from './types/PhotoArchive';
+import Explore from './types/Explore';
+import Profile from './types/Profile';
+import LoginPage from './types/LoginPage';
+import SignupPage from './types/SignupPage';
+import Navbar from './components/Navbar';
+// import ProjectInfo from './pages/ProjectInfo';
 import './App.css';
 
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-
-import Explore from './types/Explore';
-import HomePage from './types/HomePage';
-import LoginPage from './types/LoginPage';
-import Navbar from './components/Navbar';
-import PhotoArchive from './types/PhotoArchive';
-import Profile from './types/Profile';
-// import ProjectInfo from './pages/ProjectInfo';
-import React from 'react';
-import SignupPage from './types/SignupPage';
 
 function App() {
   return (
@@ -20,7 +19,8 @@ function App() {
 
         <Routes>
           <Route  path="/" element={<HomePage />} />
-          <Route path="/albums" element={<PhotoArchive />} />
+          <Route path="/albums" element={<Albums />} />
+          <Route path="/album/:albumId" element={<PhotoArchive />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
           {/* <Route path="/project" element={<ProjectInfo />} /> */}
