@@ -40,6 +40,23 @@ a:hover {
   color: #535bf2;
 }
 
-button {
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: auto !important; /* ensure buttons size to content */
+  box-sizing: border-box;
 }
