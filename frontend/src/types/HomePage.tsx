@@ -140,7 +140,7 @@ interface Slide {
     }
 
     return (
-        <div className="explore-page">
+        <div className="home-page">
         <h1>Welcome to Winnie Memory Archive!</h1>
         <p>Capture, organize, and revisit the moments that matter. Keep full
           control with per-photo privacy, smart tags, and shareable groups so
