@@ -12,39 +12,39 @@ interface Group {
     const groups: Group[] = [
     {
         id: 1,
-        title: "Werido 1",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop",
+        title: "Hackathons & Beyond",
+        desc: "From sleepless nights to standing ovations, share memories from DivHacks, BYTE Hacks, and every idea that took flight.",
+        img: "https://cdn.prod.website-files.com/5b3dd54182ecae4d1602962f/609e33e18c5000af6211f094_HR%20Hackathon%20-%20Section%202.jpg",
     },
     {
         id: 2,
-        title: "Weridos 2",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
+        title: "CCNY Chronicles",
+        desc: "Candid campus moments, shared smiles, and stories that remind us why we call CCNY home.",
+        img: "https://www.ccny.cuny.edu/sites/default/files/styles/large/public/2019-08/fastfacts_fullcampus_.jpg?itok=1FltVbLw",
     },
     {
         id: 3,
-        title: "Weridos 3",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80&w=1200&auto=format&fit=crop",
+        title: "AI & Innovation Lab",
+        desc: "Research projects, late-night brainstorming sessions, and our favorite breakthroughs in artificial intelligence.",
+        img: "https://www.sacredheart.edu/media/shu-media/school-of-computer-science-amp-engineering/AI-Lab-Robot-350x311.jpg",
     },
     {
         id: 4,
-        title: "Weridos 4",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=1200&auto=format&fit=crop",
+        title: "Women Who Code @ CCNY",
+        desc: "Empowering women in tech through hackathons, mentorship, and stories that inspire future changemakers.",
+        img: "https://ccny.swe.org/wp-content/uploads/sites/43/2024/09/SWE-CCNY-1024x1024.jpg",
     },
     {
         id: 5,
-        title: "Weridos 5",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80&w=1200&auto=format&fit=crop",
+        title: "Terminal Tales",
+        desc: "Every bug has a backstory. Dive into our late-night coding adventures and unforgettable “it finally works!” moments.",
+        img: "https://media.istockphoto.com/id/1390410555/photo/asian-programmer-checking-the-operation-of-the-code.jpg?s=612x612&w=0&k=20&c=MlgtE685jjDdbtHyyE7fnBDlLR67CXA6SkPYFdlzbic=",
     },
     {
         id: 6,
-        title: "Weridos 6",
-        desc: "Give small description",
-        img: "https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=1200&auto=format&fit=crop",
+        title: "Finals Week Chronicles",
+        desc: "Study marathons, library caffeine rituals, and the beautiful chaos of surviving another semester.",
+        img: "https://arc-anglerfish-arc2-prod-spectator.s3.amazonaws.com/public/ETN4ACRVAFDCRP2XHPUWDOJNJE.JPG",
     },
     ];
 
@@ -56,17 +56,17 @@ interface Group {
             <h1>Explore</h1>
             <p>Welcome to the Explore page! 🎉</p>
             <p>
-            Here you can discover new content, features, or simply check out what
-            others have been up to.
+            Dive into stories, memories, and creative moments shared by the CCNY community.  
+            Join public albums, connect with others, and celebrate the moments that make campus life unforgettable.
             </p>
         </div>
 
         {/* Hero Section */}
         <section className="explore-hero">
             <div className="hero-overlay">
-            <h2>Wow You Looking at other people</h2>
-            <p>Be inspired or share love with other randos</p>
-            <button className="btn hero-btn">Create A public one?</button>
+            <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
+            <p>Explore the people, projects, and passions that make our college experience unforgettable.</p>
+            <button className="btn hero-btn">Create A Public Album</button>
             </div>
         </section>
 
@@ -81,10 +81,17 @@ interface Group {
                 <p className="muted">{g.desc}</p>
 
                 <div className="avatars">
-                    <span className="avatar a1" />
-                    <span className="avatar a2" />
-                    <span className="avatar a3" />
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
+                    </div>
                 </div>
+
 
                 <button className="btn">Join</button>
                 </div>
@@ -100,51 +107,72 @@ interface Group {
             {/* Featured (big left) */}
             <div className="mv-card featured">
                 <img
-                src="https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=1200&auto=format&fit=crop"
+                src="https://hedberg.ccnysites.cuny.edu/talks/SoYouWantToMakeASpaceVideo/img/ccnyplanetarium.jpg"
                 alt="Album Name"
                 className="mv-img"
                 />
                 <div className="mv-meta">
-                <h3>Album Name</h3>
+                <h3>CCNY Nights</h3>
                 <div className="avatars">
-                    <span className="avatar a1" />
-                    <span className="avatar a2" />
-                    <span className="avatar a3" />
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
+                    </div>
                 </div>
+
                 </div>
             </div>
 
             {/* Small top-right */}
             <div className="mv-card small small-top">
                 <img
-                src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop"
+                src="https://www.ccny.cuny.edu/sites/default/files/inline-images/GSOE%20PhDs.png"
                 alt="AlbumName"
                 className="mv-img"
                 />
                 <div className="mv-meta">
-                <h3>AlbumName</h3>
+                <h3>Grove School Projects</h3>
                 <div className="avatars">
-                    <span className="avatar a1" />
-                    <span className="avatar a2" />
-                    <span className="avatar a3" />
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
+                    </div>
+                    <div className="avatar">
+                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
+                    </div>
                 </div>
+
                 </div>
             </div>
 
             {/* Small bottom-right */}
             <div className="mv-card small small-bottom">
                 <img
-                src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop"
+                src="https://www.ccny.cuny.edu/sites/default/files/2025-04/0402_FAQ_BC.jpg"
                 alt="Album Name"
                 className="mv-img"
                 />
                 <div className="mv-meta">
-                <h3>Album Name</h3>
-                <div className="avatars">
-                    <span className="avatar a1" />
-                    <span className="avatar a2" />
-                    <span className="avatar a3" />
+                <h3>Graduation Diaries</h3>
+            <div className="avatars">
+                <div className="avatar">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
                 </div>
+                <div className="avatar">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
+                </div>
+                <div className="avatar">
+                    <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
+                </div>
+            </div>
+
                 </div>
             </div>
             </div>
