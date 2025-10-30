@@ -2,15 +2,15 @@ import './App.css';
 
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import Explore from './pages/Explore';
-import HomePage from './pages/HomePage';
+import Explore from './types/Explore';
+import HomePage from './types/HomePage';
 import LoginPage from './types/LoginPage';
 import Navbar from './components/Navbar';
-import PhotoArchive from './pages/PhotoArchive';
+import PhotoArchive from './types/PhotoArchive';
 import Profile from './types/Profile';
-import ProjectInfo from './pages/ProjectInfo';
+// import ProjectInfo from './pages/ProjectInfo';
 import React from 'react';
-import SignupPage from './pages/SignupPage';
+import SignupPage from './types/SignupPage';
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
           <Route path="/albums" element={<PhotoArchive />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/project" element={<ProjectInfo />} />
+          {/* <Route path="/project" element={<ProjectInfo />} /> */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
