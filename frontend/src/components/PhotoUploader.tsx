@@ -13,10 +13,36 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   const [fileName, setFileName] = useState<string>("");
   const [tags, setTags] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const isWarning = Boolean(
+    error &&
+      /proceed with caution|does not look like an image|warning/i.test(error)
+  );
+
+  // Configurable limits
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 10 MB
+  const IMAGE_EXT_REGEX = /\.(jpe?g|png|gif|webp|bmp|svg)$/i;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // Basic validation: MIME type and size
+      if (!selectedFile.type.startsWith("image/")) {
+        setError("Only image files are allowed.");
+        setFile(null);
+        setFileName("");
+        setPreviewUrl("");
+        return;
+      }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setError("File is too large. Max size is 5 MB.");
+        setFile(null);
+        setFileName("");
+        setPreviewUrl("");
+        return;
+      }
+      setError("");
+
       setFile(selectedFile);
       setFileName(selectedFile.name);
 
@@ -30,7 +56,35 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
 
   const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
-    setPreviewUrl(e.target.value);
+    // setPreviewUrl(e.target.value);
+
+    // URL validation
+    const val = e.target.value.trim();
+    if (!val) {
+      setPreviewUrl("");
+      setError("")
+      return;
+    }
+    try {
+      const urlObj = new URL(val);
+      if (!["http:", "https:"].includes(urlObj.protocol)) {
+        setError("URL must use http or https.");
+        setPreviewUrl("");
+        return;
+      }
+    } catch {
+      setError("Invalid URL.");
+      setPreviewUrl("");
+      return;
+    }
+
+    if (!IMAGE_EXT_REGEX.test(val.split("?")[0])) {
+      // extension check may be too strict for some hosts; show a warning but allow user to proceed
+      setError("URL does not look like an image (jpg/png/gif etc.). Proceed with caution.");
+    } else {
+      setError("");
+    }
+    setPreviewUrl(val);
   };
 
   const handleTagsChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +93,21 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // Prevent submit if validation error present
+    if (error) {
+      return;
+    }
+
+    // Ensure there's a valid source for the image
+    if (uploadType === "file" && !file) {
+      setError("Please select an image file to upload.");
+      return;
+    }
+    if (uploadType === "url" && !previewUrl) {
+      setError("Please provide a valid image URL.");
+      return;
+    }
 
     const tagsArray = tags
       .split(",")
@@ -60,6 +129,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     setFileName("");
     setTags("");
     setPreviewUrl("");
+    setError("");
   };
 
   // const fileInputKey = file ? "has-file" : "no-file";
@@ -67,6 +137,16 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   return (
     <div className="photo-uploader">
       <h2>Upload a New Memory</h2>
+
+      
+      {error && (
+        <p
+          className={`upload-error ${isWarning ? "warning" : "error"}`}
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
 
       <div className="upload-type-toggle">
         <button
