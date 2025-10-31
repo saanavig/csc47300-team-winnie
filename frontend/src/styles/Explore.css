@@ -215,3 +215,43 @@
 .hero-btn:hover {
   background: #222;
 }
+
+
+
+/* 🔍 Search Bar Section */
+.explore-search {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.search-wrapper {
+  position: relative;
+  width: 60%;
+  max-width: 500px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  font-size: 1.1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3rem;   border-radius: 50px;
+  border: 1.5px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+  border-color: seagreen;
+  box-shadow: 0 0 6px rgba(46, 139, 87, 0.3);
+}
