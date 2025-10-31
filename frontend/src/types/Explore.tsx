@@ -1,6 +1,6 @@
 import "../styles/Explore.css";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 
 interface Group {
     id: number;
@@ -49,6 +49,16 @@ interface Group {
     ];
 
     const Explore: React.FC = () => {
+        
+    const [query, setQuery] = useState("");
+    const filteredGroups = useMemo(
+    () =>
+        groups.filter((g) =>
+        (g.title + " " + g.desc).toLowerCase().includes(query.trim().toLowerCase())
+        ),
+    [query]
+    );
+
     return (
         <main className="explore-page">
         {/* Intro Header */}
@@ -70,9 +80,28 @@ interface Group {
             </div>
         </section>
 
+        <section className="explore-search">
+            <div className="search-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search albums, tags, or descriptions…"
+                className="search-input"
+                aria-label="Search albums"
+                />
+            </div>
+        </section>
+
+
+        {filteredGroups.length === 0 && (
+        <p className="muted no-results">No matches found.</p>
+        )}
+
         {/* Grid of Cards */}
         <div className="explore-grid">
-            {groups.map((g) => (
+            {filteredGroups.map((g) => (
             <div key={g.id} className="explore-card">
                 <img src={g.img} alt={g.title} className="card-img" />
 
