@@ -176,3 +176,46 @@
   .profile-page .profile-avatar { width: 100px; height: 100px; justify-self: center; }
   .profile-page .stats-row { gap: 1rem; }
 }
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clickable:hover {
+  opacity: 0.8;
+}
+
+.add-friend-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.add-friend-form input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.add-friend-form button {
+  padding: 8px 12px;
+  background-color: #0073ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.add-friend-form button:hover {
+  background-color: #005fcc;
+}
+
+.status-message {
+  margin-top: 4px;
+  font-size: 14px;
+}
+

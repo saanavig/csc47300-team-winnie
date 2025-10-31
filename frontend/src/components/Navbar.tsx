@@ -12,7 +12,7 @@ interface DecodedToken {
 
     export default function Navbar() {
     const navigate = useNavigate();
-    const location = useLocation(); // 👈 detect route changes
+    const location = useLocation();
     const [username, setUsername] = useState<string | null>(null);
 
     const loadUserFromToken = () => {
@@ -30,7 +30,6 @@ interface DecodedToken {
         }
     };
 
-    // 👇 runs every time route (URL) changes — including after login/logout navigation
     useEffect(() => {
         loadUserFromToken();
     }, [location]);
