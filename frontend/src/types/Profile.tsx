@@ -1,5 +1,8 @@
 import "../styles/Profile.css";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+
+import PopupModal from "../components/PopupModal";
 
 interface ProfileType {
   name: string;
@@ -28,57 +31,9 @@ export default function ProfilePage() {
     friends: ["Alice", "Bob", "Charlie", "Dana"],
   });
 
-  const [showFriends, setShowFriends] = useState(false);
-
-  const [albums] = useState<Album[]>([
-    {
-      title: "Vacation 2025",
-      cover:
-        "https://t4.ftcdn.net/jpg/02/65/26/83/360_F_265268314_LmykO3vrtzmh3TQbBdnxj9vUczqqJXCU.jpg",
-      contributors: [
-        { name: "Alice", avatar: "https://i.pravatar.cc/80?img=5" },
-        { name: "Bob", avatar: "https://i.pravatar.cc/80?img=12" },
-        { name: "Cara", avatar: "https://i.pravatar.cc/80?img=32" },
-      ],
-    },
-    {
-      title: "Cats & Dogs",
-      cover:
-        "https://media.istockphoto.com/id/1168451046/photo/cat-and-dog-sleeping-puppy-and-kitten-sleep.jpg?s=612x612&w=0&k=20&c=WufdaqZhhwOT6sJFAb6g7-laVoBWaf66XefiWUt44BQ=",
-      contributors: [
-        { name: "Danny", avatar: "https://i.pravatar.cc/80?img=8" },
-        { name: "Eva", avatar: "https://i.pravatar.cc/80?img=20" },
-        { name: "Finn", avatar: "https://i.pravatar.cc/80?img=44" },
-      ],
-    },
-    {
-      title: "Graduation",
-      cover:
-        "https://media.istockphoto.com/id/538650431/photo/high-school-or-college-graduate.jpg?s=612x612&w=0&k=20&c=3vd8-sdCVfbMXjU8-BgLcAqC0iZn3ykwyNwhYGFtCpA=",
-      contributors: [
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },
-        { name: "Ivy", avatar: "https://i.pravatar.cc/80?img=60" },
-      ],
-    },
-    {
-      title: "Student Government",
-      cover:
-        "https://cap.uncg.edu/wp-content/uploads/2025/03/PIC251209-SGA_SAAC_Spring_Basketball_Tailgate_0481_crop.png",
-      contributors: [
-        { name: "Gina", avatar: "https://i.pravatar.cc/80?img=15" },
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },      ],
-    },
-    {
-      title: "Spotting Our Mascot!",
-      cover:
-        "https://www.ccny.cuny.edu/sites/default/files/2025-03/Benny_the_Beaver_1050x700.jpg",
-      contributors: [
-        { name: "Gina", avatar: "https://i.pravatar.cc/80?img=15" },
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },
-        { name: "Ivy", avatar: "https://i.pravatar.cc/80?img=60" },
-      ],
-    },
-  ]);
+  const [showPopup, setShowPopup] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
+  const token = localStorage.getItem("token");
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [followers, setFollowers] = useState(128);
@@ -87,6 +42,52 @@ export default function ProfilePage() {
   const toggleFollow = () => {
     setIsFollowing((prev) => !prev);
     setFollowers((count) => (isFollowing ? count - 1 : count + 1));
+  };
+
+  const fetchFriendData = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/friends/list", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      setData(result);
+    } catch (err) {
+      console.error("Failed to fetch friend data:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (showPopup) fetchFriendData();
+  }, [showPopup]);
+
+  /** ✅ Safe Add Friend Handler */
+  const handleAddFriend = async (username: string): Promise<string> => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/friends/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      let result: any;
+      try {
+        result = await res.json();
+      } catch {
+        throw new Error("Invalid server response.");
+      }
+
+      if (res.ok) {
+        return result.message || "✅ Friend request sent!";
+      } else {
+        throw new Error(result.error || "❌ Something went wrong.");
+      }
+    } catch (err: any) {
+      console.error("Add friend error:", err);
+      throw new Error(err.message || "❌ Network or server error.");
+    }
   };
 
   return (
@@ -104,42 +105,53 @@ export default function ProfilePage() {
               >
                 {isFollowing ? "Following" : "Follow"}
               </button>
+
               <button
                 className="secondary-btn"
-                onClick={() => setShowFriends((s) => !s)}
+                onClick={() => setShowPopup("notifications")}
               >
-                {showFriends ? "Hide Friends" : "Friends"}
+                Notifications
+              </button>
+
+              <button
+                className="secondary-btn"
+                onClick={() => setShowPopup("add")}
+              >
+                Add Friend
               </button>
             </div>
           </div>
 
-          <ul className="stats-row" aria-label="Profile statistics">
+          <ul className="stats-row">
             <li>
-              <strong>{albums.length}</strong> posts
+              <strong>5</strong> posts
             </li>
             <li>
-              <strong>{followers}</strong> followers
+              <strong>{followers}</strong>{" "}
+              <span
+                className="clickable"
+                onClick={() => setShowPopup("followers")}
+              >
+                followers
+              </span>
             </li>
             <li>
-              <strong>{following}</strong> following
+              <strong>{following}</strong>{" "}
+              <span
+                className="clickable"
+                onClick={() => setShowPopup("following")}
+              >
+                following
+              </span>
             </li>
           </ul>
 
           <section className="bio">
             <p>{profile.bio}</p>
           </section>
-
-          {showFriends && (
-            <ul className="friends-list">
-              {profile.friends.map((f, i) => (
-                <li key={i}>{f}</li>
-              ))}
-            </ul>
-          )}
         </div>
 
         <div className="profile-avatar">
-          <div className="avatar-wrap" aria-hidden="true" />
           <img
             src={profile.avatar}
             alt={`${profile.name} avatar`}
@@ -148,39 +160,117 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="tabs-bar" role="tablist" aria-label="Profile sections">
-        <button className="tab active" role="tab" aria-selected>
-          Albums
-        </button>
-      </div>
+      {/* Popups */}
+      {showPopup === "add" && (
+        <PopupModal title="Add Friend" onClose={() => setShowPopup(null)}>
+          <AddFriendPopup onAdd={handleAddFriend} />
+        </PopupModal>
+      )}
 
-      {/* Albums Grid */}
-      <section className="profile-albums">
-        <div className="albums-grid">
-          {albums.map((album, idx) => (
-            <article key={idx} className="album-card" aria-label={album.title}>
-              <div className="album-media">
-                <img src={album.cover} alt={album.title} />
-              </div>
-              <div className="album-meta">
-                <h3 className="album-title">{album.title}</h3>
-                <div className="album-avatars">
-                  {album.contributors.slice(0, 3).map((c, i) => (
-                    <img
-                      key={i}
-                      src={c.avatar}
-                      alt={c.name}
-                      title={c.name}
-                      className="album-avatar"
-                    />
-                  ))}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      {showPopup === "notifications" && (
+        <PopupModal title="Friend Requests" onClose={() => setShowPopup(null)}>
+          {data?.friendRequests?.incoming?.length ? (
+            data.friendRequests.incoming.map((req: string) => (
+              <FriendRequestItem key={req} username={req} token={token} />
+            ))
+          ) : (
+            <p>No pending requests</p>
+          )}
+        </PopupModal>
+      )}
+
+      {showPopup === "followers" && (
+        <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
+          {data?.followers?.length ? (
+            data.followers.map((u: string) => <p key={u}>{u}</p>)
+          ) : (
+            <p>No followers yet</p>
+          )}
+        </PopupModal>
+      )}
+
+      {showPopup === "following" && (
+        <PopupModal title="Following" onClose={() => setShowPopup(null)}>
+          {data?.following?.length ? (
+            data.following.map((u: string) => <p key={u}>{u}</p>)
+          ) : (
+            <p>Not following anyone</p>
+          )}
+        </PopupModal>
+      )}
+    </div>
+  );
+}
+
+function AddFriendPopup({ onAdd }: { onAdd: (username: string) => Promise<string> }) {
+  const [username, setUsername] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const message = await onAdd(username);
+      setStatus(message);
+      setUsername("");
+    } catch (err: any) {
+      setStatus(err.message || "❌ Failed to send request.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form className="add-friend-form" onSubmit={handleSubmit}>
+      <label htmlFor="friend-input">Enter username or email:</label>
+      <input
+        id="friend-input"
+        type="text"
+        placeholder="e.g. johndoe"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <button type="submit" disabled={loading}>
+        {loading ? "Sending..." : "Send Request"}
+      </button>
+      {status && <p className="status-message">{status}</p>}
+    </form>
+  );
+}
+
+function FriendRequestItem({
+  username,
+  token,
+}: {
+  username: string;
+  token: string | null;
+}) {
+  const handleResponse = async (action: string) => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/friends/respond", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username, action }),
+      });
+      const result = await res.json();
+      alert(result.message || result.error);
+    } catch (err) {
+      alert("❌ Network error.");
+    }
+  };
+
+  return (
+    <div className="friend-request-item">
+      <span>{username}</span>
+      <button onClick={() => handleResponse("accept")}>Accept</button>
+      <button onClick={() => handleResponse("decline")}>Decline</button>
     </div>
   );
 }
