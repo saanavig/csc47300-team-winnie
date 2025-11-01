@@ -195,7 +195,7 @@
 
 .add-friend-form input {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #070000;
   border-radius: 6px;
   font-size: 14px;
 }
@@ -203,7 +203,7 @@
 .add-friend-form button {
   padding: 8px 12px;
   background-color: #0073ff;
-  color: white;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -219,3 +219,36 @@
   font-size: 14px;
 }
 
+.profile-page .friend-request-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.profile-page .friend-request-item span {
+  margin-right: 12px;
+  font-weight: 600;
+}
+
+.profile-page .friend-request-item button {
+  background-color: var(--accent);
+  color: #ffffff;
+  border: 1px solid var(--accent);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-left: 4px;
+}
+
+.profile-page .friend-request-item button:first-child {
+  margin-left: 0;
+}
+
+.profile-page .friend-request-item button:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
