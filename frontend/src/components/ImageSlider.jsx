@@ -64,7 +64,10 @@ function ImageSlider({ photos }) {
             className={`slide ${index === currentIndex ? 'active' : ''}`}
             style={{ backgroundImage: `url(${photo.url})` }}
           >
-            <div className="slide-content">
+             <div className="slide-overlay">
+             <h3 className="slide-caption">{photo.caption}</h3>
+             <p className="slide-author">By {photo.author}</p>
+
               {photo.tags.length > 0 && (
                 <div className="slide-tags">
                   {photo.tags.map(tag => (
@@ -90,10 +93,6 @@ function ImageSlider({ photos }) {
         ))}
       </div>
 
-      <div className="scroll-indicator">
-        <span>Scroll Down</span>
-        <div className="scroll-arrow">↓</div>
-      </div>
     </div>
   );
 }

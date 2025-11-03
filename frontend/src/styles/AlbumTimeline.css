@@ -1,0 +1,104 @@
+.album-page {
+    padding: 2rem;
+    max-width: 1500px;
+    margin: 0 auto;
+    font-family: 'Poppins', sans-serif;
+  }
+  .album-header {
+    text-align: center;
+    padding: 30px;
+    margin-bottom: 2rem;
+  }
+  
+  .back-btn {
+    background: rgb(236, 177, 177);
+    border: 1px solid #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .back-btn:hover {
+    background: #cd7070;
+  }
+  
+  .album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* --- Card Base --- */
+  .album-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .album-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* --- Image --- */
+  .album-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+    transition: transform 0.5s ease;
+    line-height: 0;
+    height: 390px;
+  }
+  
+  .album-card:hover .album-img {
+    transform: scale(1.48);
+  }
+  
+  /* --- Overlay --- */
+  .album-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+    opacity: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 1rem;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  
+  .album-card:hover .album-overlay {
+    opacity: 1;
+  }
+  
+  /* --- Text Content --- */
+  .overlay-content {
+    color: #fff;
+    transition: transform 0.4s ease;
+    transform: translateY(20px);
+  }
+  
+  .album-card:hover .overlay-content {
+    transform: translateY(0);
+  }
+  
+  .caption {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .creator,
+  .likes {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin: 0;
+  }  

@@ -10,6 +10,7 @@ import ProjectInfo from './pages/ProjectInfo';
 import Explore from './pages/Explore';
 import React from 'react';
 import LoginPage from './pages/LoginPage';
+import AlbumTimeline from './pages/AlbumTimeline';
 
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/project" element={<ProjectInfo />} />
           <Route path="/login" element={<LoginPage />} />
-          
+          <Route path="/album/:id" element={<AlbumTimeline />} />
         </Routes>
       </div>
     </Router>

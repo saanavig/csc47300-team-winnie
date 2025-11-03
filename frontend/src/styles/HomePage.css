@@ -39,5 +39,106 @@
     font-size: 20px;
 }
 .avatar.a1 { background: #e5e7eb; color: #0f172a; } /* grey */
-.avatar.a2 { background: #ef4444; color: #fff; }    /* red */
+.avatar.a2 { background: #720f0f; color: #fff; }    /* red */
 .avatar.a3 { background: #4338ca; color: #fff; }    /* indigo */
+
+
+.albums-section {
+    margin-top: 60px;
+  }
+  
+  .albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  
+  .album-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: visible;
+    background: #f8fafc;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  }
+  
+  .album-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .album-image {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+  }
+  
+  .album-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+  
+  .album-card:hover img {
+    transform: scale(1.68);
+  }
+  
+  /* Overlay content */
+  .album-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+    color: white;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+  }
+  
+  .album-card:hover .album-overlay {
+    opacity: 1;
+  }
+  
+  .album-overlay h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .album-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .album-tag {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Always visible avatars */
+  .album-members {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: -10px;
+    z-index: 5;
+  }
+  
+  .album-members .avatar {
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  
