@@ -1,0 +1,198 @@
+/* Base card */
+.timeline-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    cursor: pointer;
+    background: #111; /* fallback while image loads */
+    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
+    transition: transform 240ms ease, box-shadow 240ms ease;
+    display: block;
+  }
+  
+  /* Size modifiers */
+  .timeline-card--small {
+    height: 224px; /* ~h-56 */
+    min-height: 224px;
+  }
+  .timeline-card--medium {
+    height: 288px; /* ~h-72 */
+    min-height: 288px;
+  }
+  .timeline-card--large {
+    height: 384px; /* ~h-96 */
+    min-height: 384px;
+  }
+  
+  /* Image container & image */
+  .timeline-card__image-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: block;
+  }
+  
+  .timeline-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 600ms cubic-bezier(.2,.9,.2,1),
+                filter 420ms ease,
+                opacity 420ms ease;
+    transform-origin: center;
+    filter: none;
+  }
+  
+  /* hovered state (applied via class) */
+  .timeline-card__image.is-hovered {
+    transform: scale(1.08);
+    filter: blur(2px) brightness(0.72);
+    opacity: 0.98;
+  }
+  
+  /* Outline / elevation on hover */
+  .timeline-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.12);
+  }
+  
+  /* Overlay that fades & slides up */
+  .timeline-card__overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 18px;
+    pointer-events: none; /* overlay not interactive; like button is separate */
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 360ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease;
+    background: linear-gradient(0deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0) 100%);
+    display: flex;
+    align-items: flex-end;
+    min-height: 40%;
+  }
+  
+  /* When visible, slide up + fade in */
+  .timeline-card__overlay.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  /* Text inside overlay */
+  .timeline-card__text {
+    color: #fff;
+    max-width: 85%;
+  }
+  
+  .timeline-card__creator {
+    margin: 0 0 6px 0;
+    font-size: 0.82rem;
+    opacity: 0.9;
+  }
+  
+  .timeline-card__caption {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.15;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+  
+  /* Like control (always visible) */
+  .timeline-card__like {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 30;
+    /* small backdrop for visibility on bright images */
+    padding: 4px 6px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.28);
+    backdrop-filter: blur(4px);
+    transition: background 220ms ease;
+  }
+  
+  /* Like button */
+  .timeline-card__like-button {
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* icon inside button */
+  .timeline-card__like-icon {
+    display: inline-block;
+    font-size: 16px; /* small heart */
+    line-height: 1;
+    transform-origin: center;
+    transition: transform 220ms ease, opacity 220ms ease;
+    opacity: 0.95;
+  }
+  
+  /* Like count text */
+  .timeline-card__like-count {
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.95;
+  }
+  
+  /* Hover/pulse effects for like button */
+  .timeline-card__like-button:hover {
+    transform: scale(1.12);
+  }
+  
+  .timeline-card__like-button.is-liked {
+    /* when liked, add glow and small scale; icon filled by changing color */
+    transform: scale(1.06);
+    box-shadow: 0 6px 16px rgba(237, 73, 86, 0.18);
+  }
+  
+  /* Liked icon fill (we're using the text heart so colorize it) */
+  .timeline-card__like-button.is-liked .timeline-card__like-icon {
+    color: #ff3b30; /* red */
+    transform: scale(1.08);
+    animation: like-pop 360ms cubic-bezier(.2,.9,.2,1);
+  }
+  
+  /* pulse/pop keyframe */
+  @keyframes like-pop {
+    0% { transform: scale(0.9); opacity: 0.9; }
+    50% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1.06); opacity: 1; }
+  }
+  
+  /* small accessibility focus */
+  .timeline-card__like-button:focus {
+    box-shadow: 0 0 0 3px rgba(255,59,48,0.14);
+  }
+  
+  /* Better contrast on small screens */
+  @media (max-width: 640px) {
+    .timeline-card__creator { font-size: 0.75rem; }
+    .timeline-card__caption { font-size: 0.94rem; }
+    .timeline-card__like-count { font-size: 0.78rem; }
+    .timeline-card__like { bottom: 10px; right: 10px; gap: 6px; padding: 3px 6px; }
+  }
+  
+  /* image 'liked' subtle state (optional) */
+  .timeline-card__image.is-liked {
+    /* tiny heart-shaped tint could be applied via overlay if desired */
+    transition: filter 420ms ease, transform 420ms ease;
+  }
+  

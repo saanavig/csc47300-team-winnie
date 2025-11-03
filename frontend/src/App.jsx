@@ -10,6 +10,18 @@ import Navbar from './components/Navbar';
 // import ProjectInfo from './pages/ProjectInfo';
 import './App.css';
 
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+
+import HomePage from './pages/HomePage';
+import Navbar from './components/Navbar';
+import PhotoArchive from './pages/PhotoArchive';
+import Profile from './pages/Profile';
+import ProjectInfo from './pages/ProjectInfo';
+import Explore from './pages/Explore';
+import React from 'react';
+import LoginPage from './pages/LoginPage';
+import AlbumTimeline from './pages/AlbumTimeline';
+
 
 function App() {
   return (
@@ -25,7 +37,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           {/* <Route path="/project" element={<ProjectInfo />} /> */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/album/:id" element={<AlbumTimeline />} />
         </Routes>
       </div>
     </Router>

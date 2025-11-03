@@ -4,20 +4,20 @@
 
 // export default function Profile() {
 
-//     const [profile] = useState({
-//         name: 'Stuart',
-//         bio: 'Digital memory keeper. Loves photos, stories, and cats.',
-//         avatar: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop',
-//         friends: ['Alice', 'Bob', 'Charlie', 'Dana']
-//     });
+    const [profile] = useState({
+        name: 'Stuart',
+        bio: 'Digital memory keeper. Loves photos, stories, and cats.',
+        avatar: 'https://images.unsplash.com/photo-1606118858477-9a8f9dfb257a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cmF0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=900',
+        friends: ['Alice', 'Bob', 'Charlie', 'Dana']
+    });
 
 //     const [showFriends, setShowFriends] = useState(false);
 
-//     const [albums] = useState([
-//         { title: 'Vacation 2025', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' },
-//         { title: 'Cats & Dogs', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' },
-//         { title: 'Graduation', cover: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop' }
-//     ]);
+    const [albums] = useState([
+        { title: 'Vacation 2025', cover: 'https://images.unsplash.com/photo-1550399504-8953e1a6ac87?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dmFjYXRpb258ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=900' },
+        { title: 'Cats & Dogs', cover: 'https://images.unsplash.com/photo-1623387641168-d9803ddd3f35?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2F0cyUyMGFuZCUyMGRvZ3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900' },
+        { title: 'Graduation', cover: 'https://images.unsplash.com/photo-1623461487986-9400110de28e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JhZHVhdGlvbnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900' }
+    ]);
 
 //     return (
 //         <div className="profile-page">
