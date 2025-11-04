@@ -15,6 +15,7 @@ export default function Albums() {
   const [newAlbumName, setNewAlbumName] = useState('');
   const [newAlbumPrivacy, setNewAlbumPrivacy] = useState<'private' | 'shared' | 'public'>('private');
 
+  // Load albums from sessionStorage once on mount
   useEffect(() => {
     const savedAlbums = sessionStorage.getItem('winnieAlbums');
     if (savedAlbums) {
@@ -27,6 +28,7 @@ export default function Albums() {
     }
   }, []);
 
+  // Persist albums whenever they change
   useEffect(() => {
     sessionStorage.setItem('winnieAlbums', JSON.stringify(albums));
   }, [albums]);
@@ -38,6 +40,7 @@ export default function Albums() {
     }));
   };
 
+  // Create a new album and append to albums array
   const handleCreateAlbum = () => {
     if (!newAlbumName.trim()) return;
 
@@ -54,14 +57,17 @@ export default function Albums() {
     setShowCreateModal(false);
   };
 
+  // Navigate to album detail page (PhotoArchive) for the clicked album
   const handleAlbumClick = (albumId: string) => {
     navigate(`/album/${albumId}`);
   };
 
+  // retrive albums by privacy category
   const getAlbumsByPrivacy = (privacy: 'private' | 'shared' | 'public') => {
     return albums.filter(album => album.privacy === privacy);
   };
 
+  // Map array of Album objects to album cards
   const renderAlbumGrid = (categoryAlbums: Album[]) => {
     return (
       <div className="albums-grid">
@@ -88,6 +94,7 @@ export default function Albums() {
     );
   };
 
+  // Render a collapsible category section with empty state and messages
   const renderCategory = (
     category: 'private' | 'shared' | 'public',
     title: string,
@@ -160,6 +167,7 @@ export default function Albums() {
         'No public albums yet. Create a public album to share your memories with everyone!'
       )}
 
+      {/* Create album modal */}
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

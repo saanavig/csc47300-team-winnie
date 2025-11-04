@@ -14,15 +14,17 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   const [tags, setTags] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
+  // Warning detection for styling
   const isWarning = Boolean(
     error &&
       /proceed with caution|does not look like an image|warning/i.test(error)
   );
 
   // Configurable limits
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 10 MB
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
   const IMAGE_EXT_REGEX = /\.(jpe?g|png|gif|webp|bmp|svg)$/i;
 
+  // handle selecting a file: validate, store file and create preview via FileReader
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -54,6 +56,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     }
   };
 
+  // handle URL input: URL parse + protocol check + extension heuristic
   const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
     // setPreviewUrl(e.target.value);
@@ -91,6 +94,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     setTags(e.target.value);
   };
 
+  // submit: validate again, parse tags, construct Photo object, and call parent callback
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
@@ -121,6 +125,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
       uploadDate: new Date().toISOString(),
     };
 
+    // Pass the new photo up to parent (PhotoArchive)
     onPhotoUploaded(newPhoto);
 
     // Reset form
