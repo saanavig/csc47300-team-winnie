@@ -15,6 +15,7 @@ export default function PhotoArchive() {
   const [showUploader, setShowUploader] = useState<boolean>(false);
   const [albumName, setAlbumName] = useState<string>('');
 
+  // Load photos from sessionStorage and filter by albumId; also resolve album name
   useEffect(() => {
     const savedPhotos = sessionStorage.getItem('winniePhotos');
     if (savedPhotos) {
@@ -46,6 +47,7 @@ export default function PhotoArchive() {
     }
   }, [albumId]);
 
+  // Persist photos and update album metadata (photoCount, coverPhoto) when photos change
   useEffect(() => {
     sessionStorage.setItem('winniePhotos', JSON.stringify(photos));
     
@@ -72,6 +74,7 @@ export default function PhotoArchive() {
     }
   }, [photos, albumId]);
 
+  // called by PhotoUploader with a new Photo; attach current albumId and prepend to photos array
   const handlePhotoUploaded = (newPhoto: Photo) => {
     const photoWithAlbum = { ...newPhoto, albumId };
     setPhotos([photoWithAlbum, ...photos]);
@@ -81,6 +84,7 @@ export default function PhotoArchive() {
   return (
     <div className="photo-archive">
       <section className="slider-section">
+        {/* ImageSlider maps photos to slides */}
         <ImageSlider photos={photos} />
       </section>
 
@@ -99,8 +103,10 @@ export default function PhotoArchive() {
           </button>
         </header>
 
+        {/* Conditionally show uploader form */}
         {showUploader && <PhotoUploader onPhotoUploaded={handlePhotoUploaded} />}
 
+        {/* Show tag filter only when there are photos */}
         {photos.length > 0 && (
           <TagFilter
             photos={photos}
@@ -108,7 +114,8 @@ export default function PhotoArchive() {
             onSelectTag={setActiveTag}
           />
         )}
-
+        
+        {/* PhotoGrid renders photos (filtered by activeTag) */}
         <PhotoGrid photos={photos} filterTag={activeTag} />
       </section>
     </div>
