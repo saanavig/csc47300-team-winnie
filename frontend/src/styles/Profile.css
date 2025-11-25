@@ -19,8 +19,8 @@
   gap: 1.5rem;
   align-items: start;
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1.25rem;
+  /* border-bottom: 1px solid var(--border); */
+  /* padding-bottom: 1.25rem; */
   
 }
 
@@ -251,4 +251,21 @@
 .profile-page .friend-request-item button:hover {
   background-color: #2563eb;
   transform: translateY(-2px);
+}
+
+.edit-profile-btn {
+  display: block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 15px;
+  margin-left: 25px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-profile-btn:hover {
+  background-color: #005fcc;
 }

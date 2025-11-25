@@ -6,6 +6,8 @@ from flask_jwt_extended import (
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
 import os
 
 load_dotenv()
@@ -103,27 +105,37 @@ def profile():
     return jsonify({"profile": user}), 200
 
 # edit profile
-@app.route("/profile/edit", methods=["POST"])
+@app.route("/profile/update", methods=["POST"])
 @jwt_required()
 def edit_profile():
     current_user = get_jwt_identity()
-    data = request.json
+
+    # Get bio from form data
+    bio = request.form.get("bio")
+
+    # Get avatar file
+    avatar_file = request.files.get("avatar")
 
     updates = {}
-    if "bio" in data:
-        updates["bio"] = data["bio"]
-    if "avatarUrl" in data:
-        updates["avatarUrl"] = data["avatarUrl"]
-    if "username" in data and data["username"] != current_user:
-        if users_collection.find_one({"username": data["username"]}):
-            return jsonify({"error": "Username already taken"}), 400
-        updates["username"] = data["username"]
+    if bio is not None:
+        updates["bio"] = bio
+    if avatar_file:
+        filename = secure_filename(avatar_file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        avatar_file.save(filepath)
+        # Save URL that can be accessed from frontend
+        updates["avatarUrl"] = f"/uploads/{filename}"
 
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
     users_collection.update_one({"username": current_user}, {"$set": updates})
-    return jsonify({"message": "Profile updated successfully!"}), 200
+    return jsonify({"message": "Profile updated successfully!", "avatarUrl": updates.get("avatarUrl")}), 200
+
+# Serve uploaded images
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 # send friend request
 @app.route("/friends/request", methods=["POST"])
