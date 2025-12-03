@@ -10,6 +10,12 @@ from werkzeug.utils import secure_filename
 from flask import send_from_directory
 import os
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+from datetime import datetime
+
 load_dotenv()
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
@@ -26,6 +32,13 @@ def setup_indexes():
     users_collection.create_index("email", unique=True)
 
 setup_indexes()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 @app.route("/")
 def home():
@@ -244,5 +257,58 @@ def get_friends_info():
 
     return jsonify(user), 200
 
+#testing clopudinary
+@app.route("/test-upload", methods=["POST"])
+def test_upload():
+    print("Files received:", request.files)
+    file = request.files.get("file")
+    if not file:
+        return {"error": "No file provided"}, 400
+
+    result = cloudinary.uploader.upload(file)
+    print("Upload result:", result)
+    return {"url": result.get("secure_url")}
+
+# connecting cloudinary to backend
+@app.route("/albums/create", methods=["POST"])
+@jwt_required()
+def create_album():
+    current_user = get_jwt_identity()
+
+    # album title
+    title = request.form.get("title")
+    if not title:
+        return jsonify({"error": "Album title is required"}), 400
+
+    # multiple photos
+    files = request.files.getlist("photos")
+    if not files or len(files) == 0:
+        return jsonify({"error": "At least one photo is required"}), 400
+
+    uploaded_urls = []
+    for file in files:
+        try:
+            result = cloudinary.uploader.upload(file)
+            uploaded_urls.append(result.get("secure_url"))
+        except Exception as e:
+            print("Upload error:", e)
+            return jsonify({"error": f"Failed to upload photo: {str(e)}"}), 500
+
+    # create album
+    album = {
+        "title": title,
+        "photos": uploaded_urls,
+        "createdAt": datetime.utcnow()
+    }
+
+    # push album to user's albums
+    users_collection.update_one(
+        {"username": current_user},
+        {"$push": {"albums": album}}
+    )
+
+    return jsonify({"message": "Album created successfully!", "album": album}), 201
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
