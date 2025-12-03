@@ -1,12 +1,20 @@
 import "../styles/Explore.css";
 
 import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Group {
     id: number;
     title: string;
     desc: string;
     img: string;
+    }
+
+interface UserResult {
+    username: string;
+    name: string;
+    avatar?: string;
+    bio?: string;
     }
 
     const groups: Group[] = [
@@ -51,6 +59,8 @@ interface Group {
     const Explore: React.FC = () => {
         
     const [query, setQuery] = useState("");
+    const [mode, setMode] = useState<"albums" | "people">("albums"); 
+    const [userResults, setUserResults] = useState<UserResult[]>([]); 
     const filteredGroups = useMemo(
     () =>
         groups.filter((g) =>
@@ -58,6 +68,29 @@ interface Group {
         ),
     [query]
     );
+
+    const searchUsers = async (value: string) => {
+        const trimmed = value.trim();
+        if (!trimmed) {
+        setUserResults([]);
+        return;
+        }
+
+        try {
+        const res = await fetch(
+            `http://127.0.0.1:5000/users/search?q=${encodeURIComponent(trimmed)}`
+        );
+        if (!res.ok) {
+            setUserResults([]);
+            return;
+        }
+        const data = await res.json();
+        setUserResults(data);
+        } catch (err) {
+        console.error("User search failed:", err);
+        setUserResults([]);
+        }
+    };
 
     return (
         <main className="explore-page">
@@ -81,33 +114,100 @@ interface Group {
         </section>
 
         <section className="explore-search">
-            <div className="search-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search albums, tags, or descriptions…"
-                className="search-input"
-                aria-label="Search albums"
-                />
-            </div>
+        <div className="search-modes">
+            <button
+            className={mode === "albums" ? "mode-btn active" : "mode-btn"}
+            onClick={() => {
+                setMode("albums");
+                setUserResults([]);
+            }}
+            >
+            Albums
+            </button>
+            <button
+            className={mode === "people" ? "mode-btn active" : "mode-btn"}
+            onClick={() => {
+                setMode("people");
+            }}
+            >
+            People
+            </button>
+        </div>
+
+        <div className="search-wrapper">
+            <span className="search-icon">🔍</span>
+            <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+                const value = e.target.value;
+                setQuery(value);
+                if (mode === "people") {
+                searchUsers(value);
+                }
+            }}
+            placeholder={
+                mode === "albums"
+                ? "Search albums, tags, or descriptions…"
+                : "Search people by name or username…"
+            }
+            className="search-input"
+            aria-label={mode === "albums" ? "Search albums" : "Search people"}
+            />
+        </div>
         </section>
 
+        {/* People results */}
+        {mode === "people" && (
+        <section className="user-results">
+            {query.trim() && userResults.length === 0 && (
+            <p className="muted no-results">No people found.</p>
+            )}
 
-        {filteredGroups.length === 0 && (
-        <p className="muted no-results">No matches found.</p>
+            <div className="user-grid">
+            {userResults.map((u) => (
+                <Link
+                key={u.username}
+                to={`/users/${u.username}`}
+                className="user-card"
+                >
+                <img
+                    className="user-avatar"
+                    src={
+                    u.avatar ||
+                    "https://ui-avatars.com/api/?name=" +
+                        encodeURIComponent(u.name || u.username)
+                    }
+                    alt={u.name}
+                />
+                <div className="user-info">
+                    <strong>{u.name}</strong>
+                    <span className="muted">@{u.username}</span>
+                    {u.bio && <p className="muted small">{u.bio}</p>}
+                </div>
+                </Link>
+            ))}
+            </div>
+        </section>
         )}
 
-        {/* Grid of Cards */}
-        <div className="explore-grid">
+        {/* Album results */}
+        {mode === "albums" && (
+        <>
+            {filteredGroups.length === 0 && (
+            <p className="muted no-results">No matches found.</p>
+            )}
+
+            <div className="explore-grid">
             {filteredGroups.map((g) => (
-            <div key={g.id} className="explore-card">
+                <div key={g.id} className="explore-card">
                 <img src={g.img} alt={g.title} className="card-img" />
+
 
                 <div className="card-body">
                 <h2>{g.title}</h2>
                 <p className="muted">{g.desc}</p>
+
 
                 <div className="avatars">
                     <div className="avatar">
@@ -122,11 +222,16 @@ interface Group {
                 </div>
 
 
+
+
                 <button className="btn">Join</button>
                 </div>
             </div>
             ))}
-        </div>
+            </div>
+        </>
+        )}
+
 
         {/* Most Viewed Section */}
         <section className="most-viewed">
