@@ -36,7 +36,7 @@ interface DecodedToken {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        setUsername(null);
+        localStorage.removeItem("username");
         navigate("/login");
     };
 

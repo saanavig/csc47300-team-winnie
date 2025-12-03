@@ -7,6 +7,7 @@ import Profile from './types/Profile';
 import LoginPage from './types/LoginPage';
 import SignupPage from './types/SignupPage';
 import Navbar from './components/Navbar';
+import PublicProfilePage from "./types/PublicProfilePage";
 // import ProjectInfo from './pages/ProjectInfo';
 import './App.css';
 
@@ -26,6 +27,7 @@ function App() {
           {/* <Route path="/project" element={<ProjectInfo />} /> */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/users/:username" element={<PublicProfilePage />} /> {/* others */}
         </Routes>
       </div>
     </Router>

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 
 import EditProfilePopup from "../components/EditProfilePopup";
 import PopupModal from "../components/PopupModal";
+import { Link } from "react-router-dom";
+
+
 
 interface ProfileType {
   name: string;
@@ -29,12 +32,47 @@ export default function ProfilePage() {
 
   // Use state for profile to allow updates
   const [profile, setProfile] = useState<ProfileType>({
-    name: "Stuart",
-    bio: "Digital memory keeper. Loves photos, stories, and cats.",
+    name: currentUser,          
+    bio: "",
     avatar:
       "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop",
-    friends: ["Alice", "Bob", "Charlie", "Dana"],
+    friends: [],
   });
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const json = await res.json();
+
+        if (res.ok && json.profile) {
+          const p = json.profile;
+          setProfile((prev) => ({
+            ...prev,
+            // if you want to DISPLAY username:
+            name: p.username || prev.name,
+            // or if you want real full name instead, use p.name
+            bio: p.bio ?? prev.bio,
+            avatar: p.avatarUrl || prev.avatar,
+          }));
+        } else {
+          console.error("Failed to load profile:", json.error);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [token]);
+
+
 
   const [albums] = useState<Album[]>([
     {
@@ -105,7 +143,7 @@ export default function ProfilePage() {
         if (res.ok) {
           setFollowers(json.followers?.length || 0);
           setFollowing(json.following?.length || 0);
-          setIsFollowing(json.followers?.includes(profile.name));
+          setIsFollowing(json.followers?.includes(currentUser));
         }
       } catch (err) {
         console.error("Error fetching friend counts:", err);
@@ -253,10 +291,16 @@ export default function ProfilePage() {
       {showPopup === "followers" && (
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
           {data?.followers?.length ? (
-            data.followers.map((u: string) => <p key={u}>{u}</p>)
+            data.followers.map((u: string) => (
+              <p key={u}>
+                <a href={`/users/${u}`} className="profile-link">{u}</a>
+              </p>
+            ))
           ) : (
             <p>No followers yet</p>
           )}
+
+
         </PopupModal>
       )}
 
@@ -264,10 +308,16 @@ export default function ProfilePage() {
       {showPopup === "following" && (
         <PopupModal title="Following" onClose={() => setShowPopup(null)}>
           {data?.following?.length ? (
-            data.following.map((u: string) => <p key={u}>{u}</p>)
+            data.following.map((u: string) => (
+              <p key={u}>
+                <a href={`/users/${u}`} className="profile-link">{u}</a>
+              </p>
+            ))
           ) : (
             <p>Not following anyone</p>
           )}
+
+
         </PopupModal>
       )}
 
@@ -275,50 +325,55 @@ export default function ProfilePage() {
       {showPopup === "editProfile" && (
         <PopupModal title="Edit Profile" onClose={() => setShowPopup(null)}>
           <EditProfilePopup
-            currentAvatar={profile.avatar}
-            currentBio={profile.bio}
-            onSave={async (newAvatar, newBio) => {
-              if (!token) return;
+          currentAvatar={profile.avatar}
+          currentBio={profile.bio}
+          onSave={async (newAvatar, newBio) => {
+            if (!token) return;
 
-              try {
-                const formData = new FormData();
-                if (newAvatar instanceof File) {
-                  formData.append("avatar", newAvatar);
-                }
-                formData.append("bio", newBio);
-
-                const res = await fetch(
-                  "http://127.0.0.1:5000/profile/update",
-                  {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                  }
-                );
-
-                const result = await res.json();
-                if (res.ok) {
-                  setProfile((prev) => ({
-                    ...prev,
-                    bio: newBio,
-                    avatar:
-                      newAvatar instanceof File
-                        ? URL.createObjectURL(newAvatar)
-                        : prev.avatar,
-                  }));
-                  alert("Profile updated successfully!");
-                  setShowPopup(null);
-                } else {
-                  alert(result.error || "Failed to update profile");
-                }
-              } catch (err) {
-                console.error(err);
-                alert("Network error while updating profile");
+            try {
+              const formData = new FormData();
+              if (newAvatar instanceof File) {
+                formData.append("avatar", newAvatar);
               }
-            }}
-          />
+              formData.append("bio", newBio);
+
+              const res = await fetch("http://127.0.0.1:5000/profile/update", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+              });
+
+              const result = await res.json();
+
+              if (res.ok) {
+                // result.avatarUrl should be something like "/uploads/xyz.jpg"
+                const newAvatarUrl =
+                  result.avatarUrl
+                    ? "http://127.0.0.1:5000" + result.avatarUrl
+                    : profile.avatar;
+
+                setProfile((prev) => ({
+                  ...prev,             // ✅ spread previous state correctly
+                  bio: newBio,
+                  avatar: newAvatar instanceof File
+                    ? newAvatarUrl     // use the real URL from backend
+                    : prev.avatar,
+                }));
+
+                alert("Profile updated successfully!");
+                setShowPopup(null);
+              } else {
+                alert(result.error || "Failed to update profile");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Network error while updating profile");
+            }
+          }}
+        />
+
         </PopupModal>
       )}
 
@@ -356,6 +411,7 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
 /** Add Friend Popup Component */
 function AddFriendPopup({

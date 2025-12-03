@@ -309,6 +309,30 @@ def create_album():
 
     return jsonify({"message": "Album created successfully!", "album": album}), 201
 
+# --------------
+
+@app.route("/users/<username>", methods=["GET"])
+def get_public_profile(username):
+    user = users_collection.find_one({"username": username}, {"_id": 0, "password": 0})
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "name": user.get("name"),
+        "username": user.get("username"),
+        "bio": user.get("bio"),
+        "avatar": user.get("avatarUrl"),
+        "followers": len(user.get("followers", [])),
+        "following": len(user.get("following", [])),
+        "albums": user.get("albums", [])
+    })
+
+@app.route("/users", methods=["GET"])
+def list_users():
+    users = list(users_collection.find({}, {"_id":0, "username":1, "avatarUrl":1}))
+    return jsonify({"users": users})
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
