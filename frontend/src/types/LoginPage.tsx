@@ -33,6 +33,7 @@ interface LoginResponse {
 
         if (response.ok) {
             localStorage.setItem("token", data.token);
+            localStorage.setItem("username", identifier); 
             console.log("✅ JWT Token:", data.token);
             navigate("/profile"); // redirect after successful login
         } else {
