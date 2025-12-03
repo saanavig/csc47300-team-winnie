@@ -47,7 +47,9 @@ interface DecodedToken {
             <Link to="/" className="nav-button">Home</Link>
             <Link to="/explore" className="nav-button">Explore</Link>
             <Link to="/albums" className="nav-button">My Albums</Link>
+            {username && (
             <Link to="/profile" className="nav-button">Profile</Link>
+            )}
 
             {!username ? (
             <Link to="/login" className="nav-button">Login</Link>
