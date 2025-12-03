@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -7,20 +7,21 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask import send_from_directory
 import os
+import uuid
+from datetime import datetime
 
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
-from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["UPLOAD_FOLDER"] = "uploads"
+
 jwt = JWTManager(app)
 
 client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True)
@@ -44,7 +45,7 @@ cloudinary.config(
 def home():
     return jsonify({"message": "Flask backend is running!"})
 
-#signup
+# signup
 @app.route("/signup", methods=["POST"])
 def signup():
     data = request.json
@@ -73,6 +74,7 @@ def signup():
         "followers": [],
         "following": [],
         "friendRequests": {"incoming": [], "outgoing": []},
+        "friends": [],
         "albums": []
     })
 
@@ -102,7 +104,7 @@ def login():
         "token": access_token
     }), 200
 
-# profile
+# get profile
 @app.route("/profile", methods=["GET"])
 @jwt_required()
 def profile():
@@ -123,34 +125,38 @@ def profile():
 def edit_profile():
     current_user = get_jwt_identity()
 
-    # Get bio from form data
     bio = request.form.get("bio")
-
-    # Get avatar file
     avatar_file = request.files.get("avatar")
 
     updates = {}
     if bio is not None:
         updates["bio"] = bio
+
     if avatar_file:
         filename = secure_filename(avatar_file.filename)
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+        if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+            os.makedirs(app.config["UPLOAD_FOLDER"])
+
         avatar_file.save(filepath)
-        # Save URL that can be accessed from frontend
         updates["avatarUrl"] = f"/uploads/{filename}"
 
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
     users_collection.update_one({"username": current_user}, {"$set": updates})
-    return jsonify({"message": "Profile updated successfully!", "avatarUrl": updates.get("avatarUrl")}), 200
+    return jsonify({
+        "message": "Profile updated successfully!",
+        "avatarUrl": updates.get("avatarUrl")
+    }), 200
 
-# Serve uploaded images
+# serve uploaded files
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-# send friend request
+# friend requests
 @app.route("/friends/request", methods=["POST"])
 @jwt_required()
 def send_friend_request():
@@ -169,17 +175,6 @@ def send_friend_request():
 
         if not receiver:
             return jsonify({"error": "User not found"}), 404
-
-        # Initialize missing fields
-        for u in [sender, receiver]:
-            if "friendRequests" not in u:
-                u["friendRequests"] = {"incoming": [], "outgoing": []}
-            if "friends" not in u:
-                u["friends"] = []
-            if "followers" not in u:
-                u["followers"] = []
-            if "following" not in u:
-                u["following"] = []
 
         if target_username in sender.get("friends", []):
             return jsonify({"error": "Already friends"}), 400
@@ -201,7 +196,6 @@ def send_friend_request():
         print("❌ Error in /friends/request:", e)
         return jsonify({"error": "Internal server error"}), 500
 
-# accept/decline friend request
 @app.route("/friends/respond", methods=["POST"])
 @jwt_required()
 def respond_friend_request():
@@ -238,11 +232,9 @@ def respond_friend_request():
             {"$push": {"friends": current_user, "following": current_user}}
         )
         return jsonify({"message": "Friend request accepted"}), 200
-    else:
-        return jsonify({"message": "Friend request declined"}), 200
 
+    return jsonify({"message": "Friend request declined"}), 200
 
-# followers and following
 @app.route("/friends/list", methods=["GET"])
 @jwt_required()
 def get_friends_info():
@@ -257,51 +249,41 @@ def get_friends_info():
 
     return jsonify(user), 200
 
-#testing clopudinary
+# test cloudinary upload
 @app.route("/test-upload", methods=["POST"])
 def test_upload():
-    print("Files received:", request.files)
     file = request.files.get("file")
     if not file:
         return {"error": "No file provided"}, 400
 
     result = cloudinary.uploader.upload(file)
-    print("Upload result:", result)
     return {"url": result.get("secure_url")}
 
-# connecting cloudinary to backend
+# create album
 @app.route("/albums/create", methods=["POST"])
 @jwt_required()
 def create_album():
     current_user = get_jwt_identity()
-
-    # album title
     title = request.form.get("title")
     if not title:
         return jsonify({"error": "Album title is required"}), 400
 
-    # multiple photos
     files = request.files.getlist("photos")
-    if not files or len(files) == 0:
+    if not files:
         return jsonify({"error": "At least one photo is required"}), 400
 
-    uploaded_urls = []
-    for file in files:
-        try:
-            result = cloudinary.uploader.upload(file)
-            uploaded_urls.append(result.get("secure_url"))
-        except Exception as e:
-            print("Upload error:", e)
-            return jsonify({"error": f"Failed to upload photo: {str(e)}"}), 500
+    uploaded_urls = [cloudinary.uploader.upload(f).get("secure_url") for f in files]
 
-    # create album
     album = {
+        "id": str(uuid.uuid4()),
         "title": title,
         "photos": uploaded_urls,
-        "createdAt": datetime.utcnow()
+        "createdAt": datetime.utcnow(),
+        "coverUrl": uploaded_urls[0] if uploaded_urls else None,
+        "owner": current_user,
+        "collaborators": []
     }
 
-    # push album to user's albums
     users_collection.update_one(
         {"username": current_user},
         {"$push": {"albums": album}}
@@ -309,6 +291,214 @@ def create_album():
 
     return jsonify({"message": "Album created successfully!", "album": album}), 201
 
+# list album
+@app.route("/albums/list", methods=["GET"])
+@jwt_required()
+def list_albums():
+    current_user = get_jwt_identity()
+
+    # get all albums where current_user is owner or collaborator
+    users = users_collection.find(
+        {"$or":[
+            {"username": current_user},
+            {"albums.collaborators": current_user}
+        ]},
+        {"_id": 0, "albums": 1}
+    )
+
+    albums = []
+    for user in users:
+        for album in user.get("albums", []):
+            if album["owner"] == current_user or current_user in album.get("collaborators", []):
+                albums.append(album)
+
+    return jsonify({"albums": albums}), 200
+
+# get specific album
+@app.route("/albums/<album_id>", methods=["GET"])
+@jwt_required()
+def get_album(album_id):
+    current_user = get_jwt_identity()
+    user = users_collection.find_one(
+        {"albums.id": album_id},
+        {"_id": 0, "albums.$": 1}
+    )
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    album = user["albums"][0]
+    if current_user != album["owner"] and current_user not in album.get("collaborators", []):
+        return jsonify({"error": "Not authorized"}), 403
+
+    return jsonify({"album": album}), 200
+
+# delete album
+@app.route("/albums/<album_id>", methods=["DELETE"])
+@jwt_required()
+def delete_album(album_id):
+    current_user = get_jwt_identity()
+    user = users_collection.find_one({"username": current_user, "albums.id": album_id}, {"albums":1})
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    users_collection.update_one(
+        {"username": current_user},
+        {"$pull": {"albums": {"id": album_id}}}
+    )
+    return jsonify({"message": "Album deleted successfully"}), 200
+
+# add photos to an existing album
+@app.route("/albums/<album_id>/add-photos", methods=["POST"])
+@jwt_required()
+def add_photos_to_album(album_id):
+    current_user = get_jwt_identity()
+    files = request.files.getlist("photos")
+
+    if not files:
+        return jsonify({"error": "At least one photo is required"}), 400
+
+    user = users_collection.find_one({"albums.id": album_id}, {"albums.$": 1})
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    album = user["albums"][0]
+    if current_user != album["owner"] and current_user not in album.get("collaborators", []):
+        return jsonify({"error": "Not authorized to modify this album"}), 403
+
+    uploaded_urls = []
+    for file in files:
+        result = cloudinary.uploader.upload(file)
+        uploaded_urls.append(result.get("secure_url"))
+
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$push": {"albums.$.photos": {"$each": uploaded_urls}}}
+    )
+
+    return jsonify({
+        "message": f"{len(uploaded_urls)} photo(s) added successfully!",
+        "photos": uploaded_urls
+    }), 200
+
+# remove photo (owner or collaborator)
+@app.route("/albums/<album_id>/remove-photo", methods=["POST"])
+@jwt_required()
+def remove_photo_from_album(album_id):
+    current_user = get_jwt_identity()
+    data = request.json
+    photo_url = data.get("photoUrl")
+    if not photo_url:
+        return jsonify({"error": "photoUrl is required"}), 400
+
+    user = users_collection.find_one({"albums.id": album_id}, {"albums.$": 1})
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    album = user["albums"][0]
+    if current_user != album["owner"] and current_user not in album.get("collaborators", []):
+        return jsonify({"error": "Not authorized"}), 403
+
+    if photo_url not in album.get("photos", []):
+        return jsonify({"error": "Photo not found"}), 404
+
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$pull": {"albums.$.photos": photo_url}}
+    )
+
+    return jsonify({"message": "Photo removed"}), 200
+
+# set cover (owner or collaborator)
+@app.route("/albums/<album_id>/set-cover", methods=["POST"])
+@jwt_required()
+def set_album_cover(album_id):
+    current_user = get_jwt_identity()
+    data = request.json
+    cover_url = data.get("coverUrl")
+    if not cover_url:
+        return jsonify({"error": "coverUrl is required"}), 400
+
+    user = users_collection.find_one({"albums.id": album_id}, {"albums.$": 1})
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    album = user["albums"][0]
+    if current_user != album["owner"] and current_user not in album.get("collaborators", []):
+        return jsonify({"error": "Not authorized"}), 403
+
+    if cover_url not in album.get("photos", []):
+        return jsonify({"error": "coverUrl must be one of the album photos"}), 400
+
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$set": {"albums.$.coverUrl": cover_url}}
+    )
+
+    return jsonify({"message": "Album cover set", "coverUrl": cover_url}), 200
+
+
+# invite collaborator
+@app.route("/albums/<album_id>/invite", methods=["POST"])
+@jwt_required()
+def invite_collaborator(album_id):
+    current_user = get_jwt_identity()
+    data = request.json
+    collaborator_username = data.get("username")
+
+    if not collaborator_username:
+        return jsonify({"error": "Username is required"}), 400
+    if collaborator_username == current_user:
+        return jsonify({"error": "Owner is already part of the album"}), 400
+
+    collaborator = users_collection.find_one({"username": collaborator_username})
+    if not collaborator:
+        return jsonify({"error": "User not found"}), 404
+
+    user = users_collection.find_one({"username": current_user}, {"albums": 1})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    album = next((a for a in user.get("albums", []) if a["id"] == album_id), None)
+    if not album:
+        return jsonify({"error": "Album not found"}), 404
+
+    if collaborator_username in album.get("collaborators", []):
+        return jsonify({"error": "User is already a collaborator"}), 400
+
+    users_collection.update_one(
+        {"username": current_user, "albums.id": album_id},
+        {"$push": {"albums.$.collaborators": collaborator_username}}
+    )
+
+    return jsonify({"message": f"{collaborator_username} added as collaborator!"}), 200
+
+# remove collaborator (owner only)
+@app.route("/albums/<album_id>/remove-collaborator", methods=["POST"])
+@jwt_required()
+def remove_collaborator(album_id):
+    current_user = get_jwt_identity()
+    data = request.json
+    collaborator_username = data.get("username")
+    if not collaborator_username:
+        return jsonify({"error": "Username is required"}), 400
+
+    user = users_collection.find_one({"albums.id": album_id}, {"albums.$": 1})
+    if not user:
+        return jsonify({"error": "Album not found"}), 404
+
+    album = user["albums"][0]
+    if current_user != album["owner"]:
+        return jsonify({"error": "Only owner can remove collaborators"}), 403
+
+    if collaborator_username not in album.get("collaborators", []):
+        return jsonify({"error": "Not a collaborator"}), 400
+
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$pull": {"albums.$.collaborators": collaborator_username}}
+    )
+
+    return jsonify({"message": f"{collaborator_username} removed from collaborators"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
