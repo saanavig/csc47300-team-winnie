@@ -52,7 +52,8 @@ interface DecodedToken {
             {!username ? (
             <Link to="/login" className="nav-button">Login</Link>
             ) : (
-            <button onClick={handleLogout} className="nav-button">Logout</button>
+            <Link to="/login" className="nav-button" onClick={handleLogout}>Logout</Link>
+
             )}
         </nav>
         </header>
