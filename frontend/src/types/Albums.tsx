@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Albums.css';
 import { Album } from './index';
 
 export default function Albums() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [albums, setAlbums] = useState<Album[]>([]);
   const [expandedCategories, setExpandedCategories] = useState({
     private: true,
@@ -32,6 +33,18 @@ export default function Albums() {
   useEffect(() => {
     sessionStorage.setItem('winnieAlbums', JSON.stringify(albums));
   }, [albums]);
+
+  // open modal if navigated here with state.openCreate (from Explore)
+  useEffect(() => {
+    const navState = (location.state ?? {}) as { openCreate?: boolean; prefillPrivacy?: string };
+    if (navState.openCreate) {
+      setNewAlbumPrivacy((navState.prefillPrivacy as 'private'|'shared'|'public') ?? 'public');
+      setShowCreateModal(true);
+      // clear the navigation state so it doesn't reopen if user refreshes/goes back
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  // navigate & location in deps (runs once when arriving)
+  }, [location, navigate]);
 
   const toggleCategory = (category: 'private' | 'shared' | 'public') => {
     setExpandedCategories(prev => ({
