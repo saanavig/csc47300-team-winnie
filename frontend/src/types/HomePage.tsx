@@ -2,6 +2,7 @@ import "../styles/HomePage.css";
 
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Slide {
     id: number;
@@ -105,163 +106,194 @@ interface Slide {
     }
 
 
-
     export default function HomePage() {
-    const [currentIndex, setCurrentIndex] = useState<number>(0);
+      const [currentIndex, setCurrentIndex] = useState<number>(0);
+      const [comments, setComments] = useState<UserComment[]>(initialComments);
+      const [commentText, setCommentText] = useState("");
+      const navigate = useNavigate();
 
-    const [comments, setComments] = useState<UserComment[]>(initialComments);
-    const [commentText, setCommentText] = useState("");
+      // Ensure a placeholder album exists in sessionStorage (frontend-only).
+      // This lets clicking a sample album navigate to /album/:id and reuse PhotoArchive logic.
+      function openAlbum(album: Album) {
+        const id = String(album.id);
+        try {
+          const saved = sessionStorage.getItem("winnieAlbums");
+          const albums = saved ? JSON.parse(saved) : [];
+          const exists = albums.find((a: any) => a.id === id);
+          if (!exists) {
+            albums.push({
+              id,
+              name: album.title || `Album ${id}`,
+              coverPhoto: album.url,
+              photoCount: 0,
+              privacy: "public",
+              createdAt: new Date().toISOString(),
+            });
+            sessionStorage.setItem("winnieAlbums", JSON.stringify(albums));
+          }
+        } catch {
+          // ignore storage errors — navigation still proceeds
+        }
+        navigate(`/album/${id}`);
+      }
 
-    const prev = () =>
-        setCurrentIndex((i) => (i === 0 ? slides.length - 1 : i - 1));
-    const next = () =>
-        setCurrentIndex((i) => (i === slides.length - 1 ? 0 : i + 1));
+      const prev = () =>
+          setCurrentIndex((i) => (i === 0 ? slides.length - 1 : i - 1));
+      const next = () =>
+          setCurrentIndex((i) => (i === slides.length - 1 ? 0 : i + 1));
 
-    function submitComment(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        const text = commentText.trim();
-        if (!text) return;
+      function submitComment(e: React.FormEvent<HTMLFormElement>) {
+          e.preventDefault();
+          const text = commentText.trim();
+          if (!text) return;
 
-        setComments((prev) => [
-        {
-            id: (prev[0]?.id ?? 0) + 1,
-            author: "You",
-            text,
-            date: new Date().toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            }),
-            avatarUrl: YOU_AVATAR,
-        },
-        ...prev,
-        ]);
-        setCommentText("");
-    }
+          setComments((prev) => [
+          {
+              id: (prev[0]?.id ?? 0) + 1,
+              author: "You",
+              text,
+              date: new Date().toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              }),
+              avatarUrl: YOU_AVATAR,
+          },
+          ...prev,
+          ]);
+          setCommentText("");
+      }
 
-    return (
-        <div className="home-page">
-        <h1>Welcome to Winnie Memory Archive!</h1>
-        <p>Capture, organize, and revisit the moments that matter. Keep full
-          control with per-photo privacy, smart tags, and shareable groups so
-          your memories look great and stay yours.</p>
-        <br />
+      return (
+          <div className="home-page">
+          <h1>Welcome to Winnie Memory Archive!</h1>
+          <p>Capture, organize, and revisit the moments that matter. Keep full
+            control with per-photo privacy, smart tags, and shareable groups so
+            your memories look great and stay yours.</p>
+          <br />
 
-        <h2 className="section-title">&lt;Group Name&gt; Recent Photos Posted</h2>
+          <h2 className="section-title">&lt;Group Name&gt; Recent Photos Posted</h2>
 
-        {/* Slider */}
-        <section className="slider-section">
-            <ImageSlider
-            photos={slides}
-            currentIndex={currentIndex}
-            onPrev={prev}
-            onNext={next}
-            />
-        </section>
-        <br />
-
-        {/* Albums */}
-        <section className="albums-section">
-            <h2>Recent Albums</h2>
-
-            <div className="albums-grid">
-            {albums.map((album) => (
-                <div key={album.id} className="album-card">
-                <div className="album-media">
-                    <img src={album.url} alt={album.title} />
-                    <div className="album-hover">
-                    <span className="hover-text">View album →</span>
-                    </div>
-                </div>
-
-                <div className="album-body">
-                    <h3 className="album-title">{album.title}</h3>
-
-                    <div className="album-members" aria-label="Album members">
-                    <span className="avatar a1" aria-hidden="true">👥</span>
-                    <span className="avatar a2" aria-hidden="true">👤</span>
-                    <span className="avatar a3" aria-hidden="true">👤</span>
-                    </div>
-
-                    {album.tags?.length ? (
-                    <div className="album-tags">
-                        {album.tags.map((tag) => (
-                        <span key={tag} className="album-tag">#{tag}</span>
-                        ))}
-                    </div>
-                    ) : null}
-                </div>
-                </div>
-            ))}
-            </div>
-
-        </section>
-
-        <section className="album-detail container">
-        <h2 className="detail-title">
-            <br />
-          &lt;User&gt; Album Name <span className="muted">(old)</span>
-        </h2>
-
-        <div className="detail-layout">
-          {/* Left: comments */}
-          <div className="detail-comments">
-            <h3 className="comments-heading">
-              Comments <span className="count">({comments.length})</span>
-            </h3>
-
-            <div className="comment-list">
-              {comments.map((c) => (
-                <div key={c.id} className="comment">
-                  <div className="avatar-wrap" aria-hidden="true">
-                    <img
-                    className="avatar-img"
-                    src={c.avatarUrl || YOU_AVATAR}
-                    alt={`${c.author} avatar`}
-                    loading="lazy"
-                    />
-                </div>
-                  <div className="comment-content">
-                    <div className="comment-meta">
-                      <span className="author">{c.author}</span>
-                      <span className="date">{c.date}</span>
-                    </div>
-                    <p className="comment-body">{c.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <form className="comment-form" onSubmit={submitComment} aria-label="Add a comment">
-              <label className="sr-only" htmlFor="new-comment">
-                        
-              </label>
-              <textarea
-                id="new-comment"
-                className="comment-input"
-                placeholder="Write a comment…"
-                rows={3}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
+          {/* Slider */}
+          <section className="slider-section">
+              <ImageSlider
+              photos={slides}
+              currentIndex={currentIndex}
+              onPrev={prev}
+              onNext={next}
               />
-              <button className="btn comment-btn" type="submit">
-                Comment
-              </button>
-            </form>
-          </div>
+          </section>
+          <br />
 
-          {/* Right: large album image */}
-          <div className="detail-image">
-            <img
-              src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop"
-              alt="Album hero"
-            />
-          </div>
-        </div>
-      </section>
+          {/* Albums */}
+          <section className="albums-section">
+              <h2>Recent Albums</h2>
 
-        
-        
-        </div>
-    );
-}
+              <div className="albums-grid">
+              {albums.map((album) => (
+                  <div
+                    key={album.id}
+                    className="album-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openAlbum(album)}
+                    onKeyDown={(e) => { if (e.key === "Enter") openAlbum(album); }}
+                    style={{ cursor: "pointer" }}
+                  >
+                   <div className="album-media">
+                     <img src={album.url} alt={album.title} />
+                     <div className="album-hover">
+                      <span className="hover-text">View album →</span>
+                     </div>
+                   </div>
+
+                   <div className="album-body">
+                      <h3 className="album-title">{album.title}</h3>
+
+                      <div className="album-members" aria-label="Album members">
+                      <span className="avatar a1" aria-hidden="true">👥</span>
+                      <span className="avatar a2" aria-hidden="true">👤</span>
+                      <span className="avatar a3" aria-hidden="true">👤</span>
+                      </div>
+
+                      {album.tags?.length ? (
+                      <div className="album-tags">
+                          {album.tags.map((tag) => (
+                          <span key={tag} className="album-tag">#{tag}</span>
+                          ))}
+                      </div>
+                      ) : null}
+                  </div>
+                  </div>
+              ))}
+              </div>
+
+          </section>
+
+          <section className="album-detail container">
+          <h2 className="detail-title">
+              <br />
+            &lt;User&gt; Album Name <span className="muted">(old)</span>
+          </h2>
+
+          <div className="detail-layout">
+            {/* Left: comments */}
+            <div className="detail-comments">
+              <h3 className="comments-heading">
+                Comments <span className="count">({comments.length})</span>
+              </h3>
+
+              <div className="comment-list">
+                {comments.map((c) => (
+                  <div key={c.id} className="comment">
+                    <div className="avatar-wrap" aria-hidden="true">
+                      <img
+                      className="avatar-img"
+                      src={c.avatarUrl || YOU_AVATAR}
+                      alt={`${c.author} avatar`}
+                      loading="lazy"
+                      />
+                  </div>
+                    <div className="comment-content">
+                      <div className="comment-meta">
+                        <span className="author">{c.author}</span>
+                        <span className="date">{c.date}</span>
+                      </div>
+                      <p className="comment-body">{c.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <form className="comment-form" onSubmit={submitComment} aria-label="Add a comment">
+                <label className="sr-only" htmlFor="new-comment">
+                          
+                </label>
+                <textarea
+                  id="new-comment"
+                  className="comment-input"
+                  placeholder="Write a comment…"
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+                <button className="btn comment-btn" type="submit">
+                  Comment
+                </button>
+              </form>
+            </div>
+
+            {/* Right: large album image */}
+            <div className="detail-image">
+              <img
+                src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop"
+                alt="Album hero"
+              />
+            </div>
+          </div>
+        </section>
+
+          
+          </div>
+      );
+    }
