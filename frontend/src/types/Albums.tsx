@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Albums.css';
 import { Album } from './index';
@@ -15,6 +15,22 @@ export default function Albums() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState('');
   const [newAlbumPrivacy, setNewAlbumPrivacy] = useState<'private' | 'shared' | 'public'>('private');
+
+  // Cover upload states for the create-album modal
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string>('');
+  const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) {
+      // ignore non-images; could show an error if desired
+      return;
+    }
+    setCoverFile(f);
+    const reader = new FileReader();
+    reader.onload = () => setCoverPreview(reader.result as string);
+    reader.readAsDataURL(f);
+  };
 
   // Load albums from sessionStorage once on mount
   useEffect(() => {
@@ -62,11 +78,16 @@ export default function Albums() {
       name: newAlbumName,
       photoCount: 0,
       privacy: newAlbumPrivacy,
+     // store data URL preview as coverPhoto (keeps backend integration easy later)
+     coverPhoto: coverPreview || undefined,
       createdAt: new Date().toISOString(),
     };
 
     setAlbums([...albums, newAlbum]);
     setNewAlbumName('');
+    // reset cover states
+    setCoverFile(null);
+    setCoverPreview('');
     setShowCreateModal(false);
   };
 
@@ -202,6 +223,21 @@ export default function Albums() {
                   required
                 />
               </div>
+
+             <div className="form-group">
+               <label htmlFor="album-cover">Album Cover (optional)</label>
+               <input
+                 type="file"
+                 id="album-cover"
+                 accept="image/*"
+                 onChange={handleCoverChange}
+               />
+               {coverPreview && (
+                 <div style={{ marginTop: 8 }}>
+                   <img src={coverPreview} alt="Cover preview" style={{ maxWidth: 180, borderRadius: 6 }} />
+                 </div>
+               )}
+             </div>
 
               <div className="form-group">
                 <label htmlFor="album-privacy">Privacy Setting</label>
