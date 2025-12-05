@@ -19,6 +19,9 @@ export default function Albums() {
   // Cover upload states for the create-album modal
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -34,15 +37,47 @@ export default function Albums() {
 
   // Load albums from sessionStorage once on mount
   useEffect(() => {
-    const savedAlbums = sessionStorage.getItem('winnieAlbums');
-    if (savedAlbums) {
-      try {
-        setAlbums(JSON.parse(savedAlbums));
-      } catch (e) {
-        console.error('Failed to parse albums:', e);
-        setAlbums([]);
+    const loadAlbums = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const res = await fetch("http://127.0.0.1:5000/albums/list", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            // normalize server shape -> frontend Album type
+            const serverAlbums = (json.albums || []).map((a: any) => ({
+              id: a.id,
+              name: a.title ?? a.name ?? "Untitled",
+              coverPhoto: a.coverUrl ?? (a.photos && a.photos[0]) ?? undefined,
+              photoCount: (a.photos && a.photos.length) || 0,
+              privacy: a.privacy ?? "public",
+              createdAt: a.createdAt ?? new Date().toISOString(),
+              collaborators: a.collaborators ?? [],
+            }));
+            setAlbums(serverAlbums);
+            return;
+          } else {
+            console.warn("Failed to fetch albums from server:", res.status);
+          }
+        } catch (err) {
+          console.warn("Error fetching albums from server:", err);
+        }
       }
-    }
+
+      // fallback to sessionStorage if no token or fetch failed
+      const saved = sessionStorage.getItem("winnieAlbums");
+      if (saved) {
+        try {
+          setAlbums(JSON.parse(saved));
+        } catch {
+          setAlbums([]);
+        }
+      }
+    };
+
+    loadAlbums();
   }, []);
 
   // Persist albums whenever they change
@@ -69,20 +104,70 @@ export default function Albums() {
     }));
   };
 
-  // Create a new album and append to albums array
-  const handleCreateAlbum = () => {
+  // Create a new album: try server if auth token and a cover file are present,
+  // otherwise fall back to client-only sessionStorage creation.
+  const handleCreateAlbum = async () => {
     if (!newAlbumName.trim()) return;
+    setCreateError(null);
+    const token = localStorage.getItem('token'); // adjust key to match your auth
 
+    // If we have an auth token and a selected cover file, send to backend
+    if (token && coverFile) {
+      setCreating(true);
+      try {
+        const form = new FormData();
+        form.append('title', newAlbumName);
+        // backend expects files under 'photos' (list) — send cover as single photo
+        form.append('photos', coverFile, coverFile.name);
+
+        const res = await fetch('http://127.0.0.1:5000/albums/create', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: form,
+        });
+
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          throw new Error(json.error || `Server returned ${res.status}`);
+        }
+
+        const json = await res.json();
+        const serverAlbum = json.album;
+        // Normalize server album shape to frontend Album interface
+        const created: Album = {
+          id: serverAlbum.id,
+          name: serverAlbum.title || newAlbumName,
+          coverPhoto: serverAlbum.coverUrl || serverAlbum.photos?.[0] || undefined,
+          photoCount: (serverAlbum.photos && serverAlbum.photos.length) || 0,
+          privacy: newAlbumPrivacy,
+          createdAt: serverAlbum.createdAt || new Date().toISOString(),
+        };
+
+        setAlbums((prev) => [...prev, created]);
+        // reset modal state
+        setNewAlbumName('');
+        setCoverFile(null);
+        setCoverPreview('');
+        setShowCreateModal(false);
+      } catch (err: any) {
+        setCreateError(err?.message || 'Failed to create album on server');
+      } finally {
+        setCreating(false);
+      }
+      return;
+    }
+
+    // Fallback: client-only album (no server)
     const newAlbum: Album = {
       id: Date.now().toString(),
       name: newAlbumName,
       photoCount: 0,
       privacy: newAlbumPrivacy,
-     // store data URL preview as coverPhoto (keeps backend integration easy later)
-     coverPhoto: coverPreview || undefined,
+      coverPhoto: coverPreview || undefined,
       createdAt: new Date().toISOString(),
     };
-
     setAlbums([...albums, newAlbum]);
     setNewAlbumName('');
     // reset cover states
@@ -252,12 +337,14 @@ export default function Albums() {
                 </select>
               </div>
 
+              {createError && <p className="muted" style={{ color: 'red' }}>{createError}</p>}
+
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowCreateModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="primary">
-                  Create Album
+                <button type="submit" className="primary" disabled={creating}>
+                  {creating ? 'Creating…' : 'Create Album'}
                 </button>
               </div>
             </form>
