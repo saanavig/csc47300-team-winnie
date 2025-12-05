@@ -1,6 +1,7 @@
 import "../styles/Explore.css";
 
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Group {
     id: number;
@@ -50,7 +51,12 @@ interface Group {
 
     const Explore: React.FC = () => {
         
+    const navigate = useNavigate();
     const [query, setQuery] = useState("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newAlbumName, setNewAlbumName] = useState("");
+    const [newAlbumPrivacy, setNewAlbumPrivacy] = useState<'private'|'shared'|'public'>('public');
+    
     const filteredGroups = useMemo(
     () =>
         groups.filter((g) =>
@@ -58,6 +64,25 @@ interface Group {
         ),
     [query]
     );
+
+
+    const handleCreateAlbum = () => {
+        if (!newAlbumName.trim()) return;
+        const newAlbum = {
+            id: Date.now().toString(),
+            name: newAlbumName,
+            photoCount: 0,
+            privacy: newAlbumPrivacy,
+            createdAt: new Date().toISOString(),
+        };
+        const saved = sessionStorage.getItem("winnieAlbums");
+        const albums = saved ? JSON.parse(saved) : [];
+        albums.push(newAlbum);
+        sessionStorage.setItem("winnieAlbums", JSON.stringify(albums));
+        setNewAlbumName("");
+        setNewAlbumPrivacy('public');
+        setShowCreateModal(false);
+    };
 
     return (
         <main className="explore-page">
@@ -76,9 +101,66 @@ interface Group {
             <div className="hero-overlay">
             <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
             <p>Explore the people, projects, and passions that make our college experience unforgettable.</p>
-            <button className="btn hero-btn">Create A Public Album</button>
+            <button
+                className="btn hero-btn"
+                onClick={() => {
+                    // go to Albums and request the create modal (prefill public)
+                    navigate('/albums', { state: { openCreate: true, prefillPrivacy: 'public' } });
+                }}
+            >         
+            Create A Public Album
+            </button>
             </div>
         </section>
+
+        {showCreateModal && (
+            <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <h2>Create New Album</h2>
+                    <form
+                        onSubmit={(e) => {
+                        e.preventDefault();
+                        handleCreateAlbum();
+                        }}
+                    >
+                        <div className="form-group">
+                            <label htmlFor="album-name">Album Name</label>
+                            <input
+                                type="text"
+                                id="album-name"
+                                value={newAlbumName}
+                                onChange={(e) => setNewAlbumName(e.target.value)}
+                                placeholder="Enter album name"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="album-privacy">Privacy Setting</label>
+                            <select
+                                id="album-privacy"
+                                value={newAlbumPrivacy}
+                                onChange={(e) => setNewAlbumPrivacy(e.target.value as any)}
+                            >
+                                <option value="private">Private - Only you can see</option>
+                                <option value="shared">Shared - Share with specific people</option>
+                                <option value="public">Public - Everyone can see</option>
+                            </select>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button type="button" onClick={() => setShowCreateModal(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="primary">
+                                Create Album
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        )}
+
 
         <section className="explore-search">
             <div className="search-wrapper">
