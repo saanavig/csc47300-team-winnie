@@ -1,3 +1,4 @@
+import React from 'react';
 import "../styles/EditProfile.css";
 
 import { useState } from "react";

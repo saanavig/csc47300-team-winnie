@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from "react";
 import Masonry from "react-masonry-css";
 import Modal from "react-modal";
@@ -14,7 +15,6 @@ interface PhotoGridProps {
 export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
-  // filter photos by tag when filterTag is provided
   const filteredPhotos = filterTag
     ? photos.filter((photo) => photo.tags.includes(filterTag))
     : photos;
@@ -27,7 +27,6 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
     setSelectedPhoto(null);
   };
 
-  // breakpoints for react-masonry-css (columns change with width)
   const breakpointColumns = {
     default: 4,
     1100: 3,
@@ -47,7 +46,6 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
           className="photo-masonry-grid"
           columnClassName="photo-masonry-column"
         >
-          {/* map photos array for masonry grid when filter tag has content */}
           {filteredPhotos.map((photo) => (
             <div
               key={photo.id}
@@ -56,7 +54,6 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
             >
               <img src={photo.url} alt="Memory" />
               <div className="photo-overlay">
-                {/* Map tags array to small badges for each photo */}
                 {photo.tags.map((tag) => (
                   <span key={tag} className="photo-tag">
                     {tag}
@@ -68,7 +65,6 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
         </Masonry>
       )}
 
-      {/* Modal shows when selectedPhoto is set */}
       <Modal
         isOpen={!!selectedPhoto}
         onRequestClose={closeModal}

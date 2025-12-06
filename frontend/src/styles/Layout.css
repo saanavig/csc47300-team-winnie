@@ -1,0 +1,30 @@
+/*Part of Admin Interface*/
+.layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .layout__main {
+    flex: 1;
+    margin-left: 240px;
+    padding: var(--spacing-xl);
+  }
+  
+  .page-header {
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .page-header__title {
+    font-size: 1.875rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+  
+  .page-header__subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-xs);
+  }
+  body{
+    background-color: black;
+  }
