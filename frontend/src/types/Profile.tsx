@@ -60,7 +60,7 @@ export default function ProfilePage() {
             ...prev,
             name: p.username || prev.name,
             bio: p.bio ?? prev.bio,
-            avatar: p.avatarUrl || prev.avatar,
+            avatar: p.avatarUrl ? `http://127.0.0.1:5000${p.avatarUrl}` : prev.avatar,
           }));
         }
       } catch (err) {
