@@ -3,11 +3,11 @@
 /* Design System Variables */
 :root {
     /* Colors */
-    --color-background: #0f0f0f;
+    --color-background: #f9f9f9;
     --color-surface: #1a1a1a;
     --color-surface-hover: #252525;
     --color-border: #2a2a2a;
-    --color-text-primary: #ffffff;
+    --color-text-primary: #000000;
     --color-text-secondary: #a0a0a0;
     --color-text-muted: #666666;
     

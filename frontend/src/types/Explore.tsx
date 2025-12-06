@@ -1,6 +1,7 @@
 import "../styles/Explore.css";
 
 import React, { useMemo, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 interface Group {
@@ -8,9 +9,9 @@ interface Group {
     title: string;
     desc: string;
     img: string;
-    }
+}
 
-    const groups: Group[] = [
+const groups: Group[] = [
     {
         id: 1,
         title: "Hackathons & Beyond",
@@ -47,105 +48,103 @@ interface Group {
         desc: "Study marathons, library caffeine rituals, and the beautiful chaos of surviving another semester.",
         img: "https://arc-anglerfish-arc2-prod-spectator.s3.amazonaws.com/public/ETN4ACRVAFDCRP2XHPUWDOJNJE.JPG",
     },
-    ];
+];
 
-    const Explore: React.FC = () => {
-        
+const Explore: React.FC = () => {
+
     const navigate = useNavigate();
     const [query, setQuery] = useState("");
-    
-    const filteredGroups = useMemo(
-    () =>
-        groups.filter((g) =>
-        (g.title + " " + g.desc).toLowerCase().includes(query.trim().toLowerCase())
-        ),
-    [query]
-    );
 
+    const filteredGroups = useMemo(
+        () =>
+            groups.filter((g) =>
+                (g.title + " " + g.desc)
+                    .toLowerCase()
+                    .includes(query.trim().toLowerCase())
+            ),
+        [query]
+    );
 
     return (
         <main className="explore-page">
-        {/* Intro Header */}
-        <div className="explore-intro">
-            <h1>Explore</h1>
-            <p>Welcome to the Explore page! 🎉</p>
-            <p>
-            Dive into stories, memories, and creative moments shared by the CCNY community.  
-            Join public albums, connect with others, and celebrate the moments that make campus life unforgettable.
-            </p>
-        </div>
 
-        {/* Hero Section */}
-        <section className="explore-hero">
-            <div className="hero-overlay">
-            <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
-            <p>Explore the people, projects, and passions that make our college experience unforgettable.</p>
-            <button
-                className="btn hero-btn"
-                onClick={() => {
-                    // go to Albums and request the create modal (prefill public)
-                    navigate('/albums', { state: { openCreate: true, prefillPrivacy: 'public' } });
-                }}
-            >         
-            Create A Public Album
-            </button>
+            {/* Intro Header */}
+            <div className="explore-intro">
+                <h1>Explore</h1>
+                <p>Welcome to the Explore page! 🎉</p>
+                <p>
+                    Dive into stories, memories, and creative moments shared by the CCNY community.
+                    Join public albums, connect with others, and celebrate the moments that make campus life unforgettable.
+                </p>
             </div>
-        </section>
 
+            {/* Hero Section */}
+            <section className="explore-hero">
+                <div className="hero-overlay">
+                    <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
+                    <p>Explore the people, projects, and passions that make our college experience unforgettable.</p>
 
-        <section className="explore-search">
-            <div className="search-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search albums, tags, or descriptions…"
-                className="search-input"
-                aria-label="Search albums"
-                />
-            </div>
-        </section>
-
-
-        {filteredGroups.length === 0 && (
-        <p className="muted no-results">No matches found.</p>
-        )}
-
-        {/* Grid of Cards */}
-        <div className="explore-grid">
-            {filteredGroups.map((g) => (
-            <div key={g.id} className="explore-card">
-                <img src={g.img} alt={g.title} className="card-img" />
-
-                <div className="card-body">
-                <h2>{g.title}</h2>
-                <p className="muted">{g.desc}</p>
-
-                <div className="avatars">
-                    <div className="avatar">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
-                    </div>
-                    <div className="avatar">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
-                    </div>
-                    <div className="avatar">
-                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
-                    </div>
+                    <button
+                        className="btn hero-btn"
+                        onClick={() => {
+                            navigate('/albums', { state: { openCreate: true, prefillPrivacy: 'public' } });
+                        }}
+                    >
+                        Create A Public Album
+                    </button>
                 </div>
+            </section>
 
-
-                <button className="btn">Join</button>
+            {/* Search */}
+            <section className="explore-search">
+                <div className="search-wrapper">
+                    <span className="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search albums, tags, or descriptions…"
+                        className="search-input"
+                        aria-label="Search albums"
+                    />
                 </div>
-            </div>
-            ))}
-        </div>
-      </div>
-      
-      <div className="explore-grid">
-        {/* Explore content will be added here */}
-      </div>
-    </div>
-  );
-}
+            </section>
 
+            {/* No Results */}
+            {filteredGroups.length === 0 && (
+                <p className="muted no-results">No matches found.</p>
+            )}
+
+            {/* Grid of Cards */}
+            <div className="explore-grid">
+                {filteredGroups.map((g) => (
+                    <div key={g.id} className="explore-card">
+                        <img src={g.img} alt={g.title} className="card-img" />
+
+                        <div className="card-body">
+                            <h2>{g.title}</h2>
+                            <p className="muted">{g.desc}</p>
+
+                            <div className="avatars">
+                                <div className="avatar">
+                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 1" />
+                                </div>
+                                <div className="avatar">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 2" />
+                                </div>
+                                <div className="avatar">
+                                    <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User 3" />
+                                </div>
+                            </div>
+
+                            <button className="btn">Join</button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+        </main>
+    );
+};
+
+export default Explore;
