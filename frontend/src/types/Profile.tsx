@@ -3,10 +3,8 @@ import "../styles/Profile.css";
 import { useEffect, useState } from "react";
 
 import EditProfilePopup from "../components/EditProfilePopup";
-import PopupModal from "../components/PopupModal";
 import { Link } from "react-router-dom";
-
-
+import PopupModal from "../components/PopupModal";
 
 interface ProfileType {
   name: string;
@@ -21,6 +19,7 @@ interface Contributor {
 }
 
 interface Album {
+  id?: string;
   title: string;
   cover: string;
   contributors: Contributor[];
@@ -30,39 +29,39 @@ export default function ProfilePage() {
   const currentUser = localStorage.getItem("username") || "Stuart";
   const token = localStorage.getItem("token");
 
-  // Use state for profile to allow updates
   const [profile, setProfile] = useState<ProfileType>({
-    name: currentUser,          
+    name: currentUser,
     bio: "",
     avatar:
       "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop",
     friends: [],
   });
 
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [showPopup, setShowPopup] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
+
+  /** Fetch profile */
   useEffect(() => {
     if (!token) return;
 
     const fetchProfile = async () => {
       try {
         const res = await fetch("http://127.0.0.1:5000/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();
-
         if (res.ok && json.profile) {
           const p = json.profile;
           setProfile((prev) => ({
             ...prev,
-            // if you want to DISPLAY username:
             name: p.username || prev.name,
-            // or if you want real full name instead, use p.name
             bio: p.bio ?? prev.bio,
             avatar: p.avatarUrl || prev.avatar,
           }));
-        } else {
-          console.error("Failed to load profile:", json.error);
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -72,66 +71,30 @@ export default function ProfilePage() {
     fetchProfile();
   }, [token]);
 
+  /** Fetch user albums */
+  useEffect(() => {
+    if (!token) return;
 
+    const fetchAlbums = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/albums/user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (res.ok && json.albums) {
+          setAlbums(json.albums);
+        } else {
+          console.error("Failed to fetch albums:", json.error);
+        }
+      } catch (err) {
+        console.error("Error fetching albums:", err);
+      }
+    };
 
-  const [albums] = useState<Album[]>([
-    {
-      title: "Vacation 2025",
-      cover:
-        "https://t4.ftcdn.net/jpg/02/65/26/83/360_F_265268314_LmykO3vrtzmh3TQbBdnxj9vUczqqJXCU.jpg",
-      contributors: [
-        { name: "Alice", avatar: "https://i.pravatar.cc/80?img=5" },
-        { name: "Bob", avatar: "https://i.pravatar.cc/80?img=12" },
-        { name: "Cara", avatar: "https://i.pravatar.cc/80?img=32" },
-      ],
-    },
-    {
-      title: "Cats & Dogs",
-      cover:
-        "https://media.istockphoto.com/id/1168451046/photo/cat-and-dog-sleeping-puppy-and-kitten-sleep.jpg?s=612x612&w=0&k=20&c=WufdaqZhhwOT6sJFAb6g7-laVoBWaf66XefiWUt44BQ=",
-      contributors: [
-        { name: "Danny", avatar: "https://i.pravatar.cc/80?img=8" },
-        { name: "Eva", avatar: "https://i.pravatar.cc/80?img=20" },
-        { name: "Finn", avatar: "https://i.pravatar.cc/80?img=44" },
-      ],
-    },
-    {
-      title: "Graduation",
-      cover:
-        "https://media.istockphoto.com/id/538650431/photo/high-school-or-college-graduate.jpg?s=612x612&w=0&k=20&c=3vd8-sdCVfbMXjU8-BgLcAqC0iZn3ykwyNwhYGFtCpA=",
-      contributors: [
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },
-        { name: "Ivy", avatar: "https://i.pravatar.cc/80?img=60" },
-      ],
-    },
-    {
-      title: "Student Government",
-      cover:
-        "https://cap.uncg.edu/wp-content/uploads/2025/03/PIC251209-SGA_SAAC_Spring_Basketball_Tailgate_0481_crop.png",
-      contributors: [
-        { name: "Gina", avatar: "https://i.pravatar.cc/80?img=15" },
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },
-      ],
-    },
-    {
-      title: "Spotting Our Mascot!",
-      cover:
-        "https://www.ccny.cuny.edu/sites/default/files/2025-03/Benny_the_Beaver_1050x700.jpg",
-      contributors: [
-        { name: "Gina", avatar: "https://i.pravatar.cc/80?img=15" },
-        { name: "Hank", avatar: "https://i.pravatar.cc/80?img=27" },
-        { name: "Ivy", avatar: "https://i.pravatar.cc/80?img=60" },
-      ],
-    },
-  ]);
+    fetchAlbums();
+  }, [token]);
 
-  const [showPopup, setShowPopup] = useState<string | null>(null);
-  const [data, setData] = useState<any>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followers, setFollowers] = useState(0);
-  const [following, setFollowing] = useState(0);
-
-  /** Fetch friend counts + follow status */
+  /** Fetch friend counts */
   useEffect(() => {
     const fetchCounts = async () => {
       if (!token) return;
@@ -152,7 +115,7 @@ export default function ProfilePage() {
     fetchCounts();
   }, [token, profile.name]);
 
-  /** Fetch followers/following + requests for popups */
+  /** Fetch friends for popups */
   const fetchFriendData = async () => {
     if (!token) return;
     try {
@@ -170,7 +133,7 @@ export default function ProfilePage() {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
 
-  /** Send friend request */
+  /** Add friend */
   const handleAddFriend = async (username: string): Promise<string> => {
     if (!token) throw new Error("No token");
     try {
@@ -267,14 +230,12 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Add Friend Popup */}
+      {/* Popups (Add, Notifications, Followers, Following, Edit Profile) */}
       {showPopup === "add" && (
         <PopupModal title="Add Friend" onClose={() => setShowPopup(null)}>
           <AddFriendPopup onAdd={handleAddFriend} />
         </PopupModal>
       )}
-
-      {/* Notifications Popup */}
       {showPopup === "notifications" && (
         <PopupModal title="Friend Requests" onClose={() => setShowPopup(null)}>
           {data?.friendRequests?.incoming?.length ? (
@@ -286,107 +247,79 @@ export default function ProfilePage() {
           )}
         </PopupModal>
       )}
-
-      {/* Followers Popup */}
       {showPopup === "followers" && (
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
           {data?.followers?.length ? (
             data.followers.map((u: string) => (
               <p key={u}>
-                <a href={`/users/${u}`} className="profile-link">{u}</a>
+                <Link to={`/users/${u}`} className="profile-link">
+                  {u}
+                </Link>
               </p>
             ))
           ) : (
             <p>No followers yet</p>
           )}
-
-
         </PopupModal>
       )}
-
-      {/* Following Popup */}
       {showPopup === "following" && (
         <PopupModal title="Following" onClose={() => setShowPopup(null)}>
           {data?.following?.length ? (
             data.following.map((u: string) => (
               <p key={u}>
-                <a href={`/users/${u}`} className="profile-link">{u}</a>
+                <Link to={`/users/${u}`} className="profile-link">
+                  {u}
+                </Link>
               </p>
             ))
           ) : (
             <p>Not following anyone</p>
           )}
-
-
         </PopupModal>
       )}
-
-      {/* Edit Profile Popup */}
       {showPopup === "editProfile" && (
         <PopupModal title="Edit Profile" onClose={() => setShowPopup(null)}>
           <EditProfilePopup
-          currentAvatar={profile.avatar}
-          currentBio={profile.bio}
-          onSave={async (newAvatar, newBio) => {
-            if (!token) return;
+            currentAvatar={profile.avatar}
+            currentBio={profile.bio}
+            onSave={async (newAvatar, newBio) => {
+              if (!token) return;
+              try {
+                const formData = new FormData();
+                if (newAvatar instanceof File) formData.append("avatar", newAvatar);
+                formData.append("bio", newBio);
 
-            try {
-              const formData = new FormData();
-              if (newAvatar instanceof File) {
-                formData.append("avatar", newAvatar);
-              }
-              formData.append("bio", newBio);
-
-              const res = await fetch("http://127.0.0.1:5000/profile/update", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-              });
-
-              const result = await res.json();
-
-              if (res.ok) {
-                // result.avatarUrl should be something like "/uploads/xyz.jpg"
-                const newAvatarUrl =
-                  result.avatarUrl
+                const res = await fetch(
+                  "http://127.0.0.1:5000/profile/update",
+                  { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }
+                );
+                const result = await res.json();
+                if (res.ok) {
+                  const newAvatarUrl = result.avatarUrl
                     ? "http://127.0.0.1:5000" + result.avatarUrl
                     : profile.avatar;
-
-                setProfile((prev) => ({
-                  ...prev,             // ✅ spread previous state correctly
-                  bio: newBio,
-                  avatar: newAvatar instanceof File
-                    ? newAvatarUrl     // use the real URL from backend
-                    : prev.avatar,
-                }));
-
-                alert("Profile updated successfully!");
-                setShowPopup(null);
-              } else {
-                alert(result.error || "Failed to update profile");
+                  setProfile((prev) => ({
+                    ...prev,
+                    bio: newBio,
+                    avatar: newAvatar instanceof File ? newAvatarUrl : prev.avatar,
+                  }));
+                  alert("Profile updated successfully!");
+                  setShowPopup(null);
+                } else alert(result.error || "Failed to update profile");
+              } catch (err) {
+                console.error(err);
+                alert("Network error while updating profile");
               }
-            } catch (err) {
-              console.error(err);
-              alert("Network error while updating profile");
-            }
-          }}
-        />
-
+            }}
+          />
         </PopupModal>
       )}
-
-      {/* Tabs */}
-      <div className="tabs-bar">
-        <button className="tab active">Albums</button>
-      </div>
 
       {/* Albums */}
       <section className="profile-albums">
         <div className="albums-grid">
           {albums.map((album, idx) => (
-            <article key={idx} className="album-card">
+            <article key={album.id || idx} className="album-card">
               <div className="album-media">
                 <img src={album.cover} alt={album.title} />
               </div>
@@ -412,13 +345,8 @@ export default function ProfilePage() {
   );
 }
 
-
 /** Add Friend Popup Component */
-function AddFriendPopup({
-  onAdd,
-}: {
-  onAdd: (username: string) => Promise<string>;
-}) {
+function AddFriendPopup({ onAdd }: { onAdd: (username: string) => Promise<string> }) {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -457,21 +385,12 @@ function AddFriendPopup({
 }
 
 /** Friend Request Item Component */
-function FriendRequestItem({
-  username,
-  token,
-}: {
-  username: string;
-  token: string | null;
-}) {
+function FriendRequestItem({ username, token }: { username: string; token: string | null }) {
   const handleResponse = async (action: string) => {
     try {
       const res = await fetch("http://127.0.0.1:5000/friends/respond", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ username, action }),
       });
       const result = await res.json();

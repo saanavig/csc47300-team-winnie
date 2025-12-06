@@ -610,6 +610,33 @@ def list_public_albums():
 
     return jsonify({"albums": public_albums}), 200
 
+# user albums for profile view
+@app.route("/albums/user", methods=["GET"])
+@jwt_required()
+def list_user_albums():
+    current_user = get_jwt_identity()
+
+    user = users_collection.find_one(
+        {"username": current_user},
+        {"_id": 0, "albums": 1}
+    )
+
+    if not user or "albums" not in user:
+        return jsonify({"albums": []}), 200
+
+    # Format albums
+    user_albums = []
+    for album in user["albums"]:
+        user_albums.append({
+            "id": album.get("id"),
+            "title": album.get("title"),
+            "cover": album.get("coverUrl", ""),
+            "privacy": album.get("privacy", "public"),
+            "contributors": album.get("contributors", []),
+        })
+
+    return jsonify({"albums": user_albums}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
