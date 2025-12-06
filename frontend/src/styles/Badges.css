@@ -1,0 +1,40 @@
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+  }
+  
+  /* Status Badges */
+  .badge--active {
+    background-color: var(--color-status-active-bg);
+    color: var(--color-status-active);
+  }
+  
+  .badge--pending {
+    background-color: var(--color-status-pending-bg);
+    color: var(--color-status-pending);
+  }
+  
+  .badge--rejected {
+    background-color: var(--color-status-rejected-bg);
+    color: var(--color-status-rejected);
+  }
+  
+  /* Privacy Badges */
+  .badge--public {
+    background-color: var(--color-privacy-public-bg);
+    color: var(--color-privacy-public);
+  }
+  
+  .badge--shared {
+    background-color: var(--color-privacy-shared-bg);
+    color: var(--color-privacy-shared);
+  }
+  
+  .badge--private {
+    background-color: var(--color-privacy-private-bg);
+    color: var(--color-privacy-private);
+  }

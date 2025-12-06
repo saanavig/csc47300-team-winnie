@@ -140,9 +140,12 @@ interface Group {
             </div>
             ))}
         </div>
+      </div>
+      
+      <div className="explore-grid">
+        {/* Explore content will be added here */}
+      </div>
+    </div>
+  );
+}
 
-        </main>
-    );
-};
-
-export default Explore;
