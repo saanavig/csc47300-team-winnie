@@ -5,13 +5,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Album {
-    id: string;
+    id: string | null;
     title: string;
-    desc: string;
     img: string;
     owner: string;
-    privacy: 'public' | 'private' | 'shared';
-    }
+    privacy?: 'public' | 'private' | 'shared';
+}
 
     const Explore: React.FC = () => {
     const navigate = useNavigate();
@@ -23,9 +22,10 @@ interface Album {
     useEffect(() => {
         const fetchAlbums = async () => {
         try {
-            const res = await fetch("http://localhost:5000/albums/public"); // updated endpoint
-            const data: Album[] = await res.json();
-            setAlbums(data); // all albums here are already public
+            const res = await fetch("http://127.0.0.1:5000/albums/public");
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const data = await res.json();
+            setAlbums(data.albums); // <-- get array from object
         } catch (err) {
             console.error("Failed to fetch albums:", err);
         } finally {
@@ -40,9 +40,7 @@ interface Album {
     const filteredAlbums = useMemo(
         () =>
         albums.filter((a) =>
-            (a.title + " " + a.desc)
-            .toLowerCase()
-            .includes(query.trim().toLowerCase())
+            a.title.toLowerCase().includes(query.trim().toLowerCase())
         ),
         [albums, query]
     );
@@ -52,11 +50,10 @@ interface Album {
         {/* Intro Header */}
         <div className="explore-intro">
             <h1>Explore</h1>
-            <p>Welcome to the Explore page! 🎉</p>
+            <h2>Welcome to the Explore page! 🎉</h2>
             <p>
-            Dive into stories, memories, and creative moments shared by the CCNY
-            community. Join public albums, connect with others, and celebrate the
-            moments that make campus life unforgettable.
+            Join public albums, connect with others, and celebrate the moments
+            that make life special.
             </p>
         </div>
 
@@ -65,7 +62,7 @@ interface Album {
             <div className="hero-overlay">
             <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
             <p>
-                Explore the people, projects, and passions that make our college
+                Explore the people, projects, and passions that make our
                 experience unforgettable.
             </p>
             <button
@@ -89,7 +86,7 @@ interface Album {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search albums, tags, or descriptions…"
+                placeholder="Search albums…"
                 className="search-input"
                 aria-label="Search albums"
             />
@@ -105,11 +102,10 @@ interface Album {
         {/* Grid of Cards */}
         <div className="explore-grid">
             {filteredAlbums.map((a) => (
-            <div key={a.id} className="explore-card">
+            <div key={a.id ?? Math.random()} className="explore-card">
                 <img src={a.img} alt={a.title} className="card-img" />
                 <div className="card-body">
                 <h2>{a.title}</h2>
-                <p className="muted">{a.desc}</p>
                 <div className="avatars">
                     <div className="avatar">
                     <img
