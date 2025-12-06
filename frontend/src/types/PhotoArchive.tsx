@@ -15,8 +15,92 @@ export default function PhotoArchive() {
   const [showUploader, setShowUploader] = useState<boolean>(false);
   const [albumName, setAlbumName] = useState<string>('');
 
-  // Load photos from sessionStorage and filter by albumId; also resolve album name
-  useEffect(() => {
+  // Helper: load album data from server (falls back to sessionStorage)
+  const fetchAlbumFromServer = async () => {
+    const token = localStorage.getItem('token');
+    if (!albumId) return;
+
+    // Try server first when authenticated
+    if (token) {
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const found = json.album;
+          if (found) {
+            // Normalize server photos -> Photo[]
+            const serverPhotos: Photo[] = (found.photos || []).map((p: any, idx: number) => {
+              let url = "";
+              let tags: string[] = [];
+              let uploadDate = new Date().toISOString();
+              let id = `${found.id}-photo-${idx}`;
+
+              if (!p) {
+                return { id, url: "", tags: [], uploadDate, albumId: found.id } as Photo;
+              }
+
+              if (typeof p === "string") {
+                url = p;
+              } else if (typeof p === "object") {
+                // try multiple common fields cloudinary / custom backends might return
+                url =
+                  p.url ||
+                  p.secure_url ||
+                  p.secureUrl ||
+                  p.path ||
+                  p.src ||
+                  p.location ||
+                  (p.data && p.data.url) ||
+                  "";
+
+                // get tags from possible places
+                if (Array.isArray(p.tags)) tags = p.tags;
+                else if (Array.isArray(p.tagList)) tags = p.tagList;
+                else if (p.metadata && Array.isArray(p.metadata.tags)) tags = p.metadata.tags;
+                else if (p.context && p.context.custom && p.context.custom.tags) {
+                  try {
+                    tags = JSON.parse(p.context.custom.tags);
+                  } catch {
+                    tags = String(p.context.custom.tags).split(",").map((t: string) => t.trim()).filter(Boolean);
+                  }
+                }
+
+                uploadDate = p.uploadDate || p.createdAt || uploadDate;
+                id = p.id || id;
+              }
+
+              if (!url) {
+                // helpful debug; open DevTools console to inspect any problematic photo objects
+                // eslint-disable-next-line no-console
+                console.warn("Photo missing url from server album:", { albumId: found.id, raw: p });
+              }
+
+              return {
+                id,
+                url,
+                tags,
+                uploadDate,
+                albumId: found.id,
+              } as Photo;
+            });
+
+            // Only keep photos that have a valid url
+            setPhotos(serverPhotos.filter((ph) => !!ph.url));
+            setAlbumName(found.title ?? found.name ?? albumName);
+            return;
+          }
+        } else {
+          console.warn("Failed to fetch album from server:", res.status);
+        }
+      } catch (err) {
+        console.warn("Error fetching album from server:", err);
+      }
+    }
+
+    // Fallback: sessionStorage if unauthenticated or server fetch fails
     const savedPhotos = sessionStorage.getItem('winniePhotos');
     if (savedPhotos) {
       try {
@@ -29,22 +113,14 @@ export default function PhotoArchive() {
         console.error('Failed to parse stored photos:', e);
         setPhotos([]);
       }
+    } else {
+      setPhotos([]);
     }
+  };
 
-    if (albumId) {
-      const savedAlbums = sessionStorage.getItem('winnieAlbums');
-      if (savedAlbums) {
-        try {
-          const albums: Album[] = JSON.parse(savedAlbums);
-          const album = albums.find((a) => a.id === albumId);
-          if (album) {
-            setAlbumName(album.name);
-          }
-        } catch (e) {
-          console.error('Failed to parse albums:', e);
-        }
-      }
-    }
+  // Load photos from sessionStorage and filter by albumId; also resolve album name
+  useEffect(() => {
+    fetchAlbumFromServer();
   }, [albumId]);
 
   // Persist photos and update album metadata (photoCount, coverPhoto) when photos change
@@ -79,6 +155,9 @@ export default function PhotoArchive() {
     const photoWithAlbum = { ...newPhoto, albumId };
     setPhotos([photoWithAlbum, ...photos]);
     setShowUploader(false);
+    // after a local upload, re-fetch from server to ensure server state is reflected
+    // (no-op if unauthenticated or server not reachable)
+    fetchAlbumFromServer();
   };
 
   return (
@@ -103,8 +182,10 @@ export default function PhotoArchive() {
           </button>
         </header>
 
-        {/* Conditionally show uploader form */}
-        {showUploader && <PhotoUploader onPhotoUploaded={handlePhotoUploaded} />}
+        {/* Conditionally show uploader form - pass albumId so uploader can POST to server */}
+        {showUploader && (
+          <PhotoUploader albumId={albumId || undefined} onPhotoUploaded={handlePhotoUploaded} />
+        )}
 
         {/* Show tag filter only when there are photos */}
         {photos.length > 0 && (

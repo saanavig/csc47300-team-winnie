@@ -14,7 +14,7 @@
   }
   
   .photo-item {
-    margin-bottom: 10px;
+    margin-bottom: 16px;
     position: relative;
     overflow: hidden;
     border-radius: 8px;
@@ -30,13 +30,15 @@
     width: 100%;
     display: block;
     border-radius: 8px;
+    object-fit: cover;
   }
   
   .photo-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 8px;
+    left: 8px;
+    display: flex;
+    gap: 6px;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
     padding: 15px 10px 10px;
     opacity: 0;
@@ -144,3 +146,34 @@
     font-size: 14px;
     margin: 0;
   }
+  
+  /* react-masonry-css expects these classes */
+.photo-masonry-grid {
+  display: flex;
+  margin-left: -16px; /* gutter offset */
+  width: auto;
+}
+.photo-masonry-column {
+  padding-left: 16px; /* gutter */
+  background-clip: padding-box;
+}
+.photo-item {
+  margin-bottom: 16px;
+}
+.photo-item img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.photo-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+}
+/* ensure masonry columns stack photos vertically */
+.photo-masonry-column > .photo-item {
+  display: block;
+}
