@@ -139,7 +139,9 @@ def profile():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
+    user["avatar"] = user.get("avatarUrl", "")
     return jsonify({"profile": user}), 200
+
 
 # edit profile
 @app.route("/profile/update", methods=["POST"])
@@ -167,10 +169,20 @@ def edit_profile():
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
-    users_collection.update_one({"username": current_user}, {"$set": updates})
+    users_collection.update_one(
+        {"username": {"$regex": f"^{current_user}$", "$options": "i"}},
+        {"$set": updates}
+    )
+
+    # Fetch updated user so frontend can refresh instantly
+    updated_user = users_collection.find_one(
+        {"username": {"$regex": f"^{current_user}$", "$options": "i"}},
+        {"_id": 0, "password": 0}
+    )
+
     return jsonify({
         "message": "Profile updated successfully!",
-        "avatarUrl": updates.get("avatarUrl")
+        "profile": updated_user
     }), 200
 
 # serve uploaded files

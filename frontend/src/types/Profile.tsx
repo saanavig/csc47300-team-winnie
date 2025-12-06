@@ -60,7 +60,7 @@ export default function ProfilePage() {
             ...prev,
             name: p.username || prev.name,
             bio: p.bio ?? prev.bio,
-            avatar: p.avatarUrl || prev.avatar,
+            avatar: p.avatarUrl ? `http://127.0.0.1:5000${p.avatarUrl}` : prev.avatar,
           }));
         }
       } catch (err) {
@@ -282,30 +282,42 @@ export default function ProfilePage() {
           <EditProfilePopup
             currentAvatar={profile.avatar}
             currentBio={profile.bio}
-            onSave={async (newAvatar, newBio) => {
+            onSave={async (formData) => {
               if (!token) return;
               try {
-                const formData = new FormData();
-                if (newAvatar instanceof File) formData.append("avatar", newAvatar);
-                formData.append("bio", newBio);
+                const res = await fetch("http://127.0.0.1:5000/profile/update", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${token}` },
+                  body: formData,
+                });
 
-                const res = await fetch(
-                  "http://127.0.0.1:5000/profile/update",
-                  { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }
-                );
                 const result = await res.json();
+
                 if (res.ok) {
-                  const newAvatarUrl = result.avatarUrl
-                    ? "http://127.0.0.1:5000" + result.avatarUrl
-                    : profile.avatar;
+                  // Try to find the avatar URL in multiple possible shapes
+                  const rawAvatarUrl =
+                    result.avatarUrl ||
+                    result.profile?.avatarUrl ||
+                    result.user?.avatarUrl ||
+                    null;
+
+                  // Turn relative "/uploads/..." into a full URL
+                  const fullAvatarUrl =
+                    rawAvatarUrl && !rawAvatarUrl.startsWith("http")
+                      ? `http://127.0.0.1:5000${rawAvatarUrl}`
+                      : rawAvatarUrl;
+
                   setProfile((prev) => ({
                     ...prev,
-                    bio: newBio,
-                    avatar: newAvatar instanceof File ? newAvatarUrl : prev.avatar,
+                    bio: String(formData.get("bio") ?? prev.bio),
+                    avatar: fullAvatarUrl || prev.avatar,
                   }));
+
                   alert("Profile updated successfully!");
                   setShowPopup(null);
-                } else alert(result.error || "Failed to update profile");
+                } else {
+                  alert(result.error || "Failed to update profile");
+                }
               } catch (err) {
                 console.error(err);
                 alert("Network error while updating profile");
@@ -314,6 +326,7 @@ export default function ProfilePage() {
           />
         </PopupModal>
       )}
+
 
       {/* Albums */}
       <section className="profile-albums">
