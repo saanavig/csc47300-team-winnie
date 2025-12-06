@@ -1,6 +1,8 @@
-import { useState, useEffect, ChangeEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Albums.css';
+
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import { Album } from './index';
 
 export default function Albums() {
