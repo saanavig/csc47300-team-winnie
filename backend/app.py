@@ -18,7 +18,8 @@ import cloudinary.api
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+# CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["UPLOAD_FOLDER"] = "uploads"
@@ -285,11 +286,15 @@ def test_upload():
 @jwt_required()
 def create_album():
     current_user = get_jwt_identity()
+
     title = request.form.get("title")
     if not title:
         return jsonify({"error": "Album title is required"}), 400
 
-    # optional tags (JSON array or CSV string) applies to all uploaded photos
+    privacy = request.form.get("privacy", "public")
+    if privacy not in ["private", "shared", "public"]:
+        privacy = "public"
+
     raw_tags = request.form.get("tags")
     tags_for_all = []
     if raw_tags:
@@ -307,7 +312,6 @@ def create_album():
     uploaded_results = [cloudinary.uploader.upload(f) for f in files]
     uploaded_urls = [r.get("secure_url") for r in uploaded_results]
 
-    # create photo objects (id, url, tags, uploadDate)
     photo_objs = []
     for idx, url in enumerate(uploaded_urls):
         photo_objs.append({
@@ -324,7 +328,8 @@ def create_album():
         "createdAt": datetime.utcnow().isoformat(),
         "coverUrl": photo_objs[0]["url"] if photo_objs else None,
         "owner": current_user,
-        "collaborators": []
+        "collaborators": [],
+        "privacy": privacy
     }
 
     users_collection.update_one(
@@ -562,7 +567,6 @@ def remove_collaborator(album_id):
     )
 
     return jsonify({"message": f"{collaborator_username} removed from collaborators"}), 200
-# --------------
 
 @app.route("/users/<username>", methods=["GET"])
 def get_public_profile(username):
@@ -585,6 +589,26 @@ def get_public_profile(username):
 def list_users():
     users = list(users_collection.find({}, {"_id":0, "username":1, "avatarUrl":1}))
     return jsonify({"users": users})
+
+# public albums for explore
+@app.route("/albums/public", methods=["GET"])
+def list_public_albums():
+    # get all users and their albums
+    users = users_collection.find({}, {"_id": 0, "albums": 1, "username":1})
+
+    public_albums = []
+
+    for user in users:
+        for album in user.get("albums", []):
+            if album.get("privacy", "public") == "public":
+                public_albums.append({
+                    "id": album["id"],
+                    "title": album["title"],
+                    "img": album.get("coverUrl", ""),
+                    "owner": user["username"]
+                })
+
+    return jsonify({"albums": public_albums}), 200
 
 
 if __name__ == "__main__":
