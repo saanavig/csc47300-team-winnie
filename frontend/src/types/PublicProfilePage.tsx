@@ -18,7 +18,8 @@ interface PublicProfileType {
   name: string;
   username: string;
   bio: string;
-  avatar: string;
+  avatar: string;     
+  avatarUrl?: string;
   followers: number;
   following: number;
   albums: Album[];
@@ -51,7 +52,24 @@ export default function PublicProfilePage() {
           setProfile(null);
         } else {
           const data = await res.json();
-          setProfile(data);
+          
+          const fixedAvatar =
+          data.avatarUrl
+            ? `http://127.0.0.1:5000${data.avatarUrl}`
+            : "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=600&auto=format&fit=crop";
+
+        setProfile({
+          ...data,
+          avatar: fixedAvatar,
+          albums: data.albums.map((a: any) => ({
+            title: a.title,
+            cover: a.coverUrl || "",
+            contributors: [],   // backend doesn’t support collaborators yet
+          })),
+        });
+
+
+
           setIsFollowing(data.isFollowing ?? false);
         }
       } catch (err) {
@@ -127,7 +145,11 @@ export default function PublicProfilePage() {
         </div>
 
         <div className="profile-avatar">
-          <img src={profile.avatar} className="avatar-img" alt="avatar" />
+          <img
+            src={profile.avatar} 
+            alt={`${profile.username}'s avatar`}
+            className="avatar-img"
+          />
         </div>
       </header>
 

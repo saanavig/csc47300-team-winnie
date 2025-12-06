@@ -591,7 +591,7 @@ def get_public_profile(username):
         "name": user.get("name"),
         "username": user.get("username"),
         "bio": user.get("bio"),
-        "avatar": user.get("avatarUrl"),
+        "avatarUrl": user.get("avatarUrl", ""),  
         "followers": len(user.get("followers", [])),
         "following": len(user.get("following", [])),
         "albums": user.get("albums", [])
