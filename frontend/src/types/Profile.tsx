@@ -10,6 +10,7 @@ interface ProfileType {
   name: string;
   bio: string;
   avatar: string;
+  
   friends: string[];
 }
 
@@ -218,7 +219,12 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-avatar">
-          <img src={profile.avatar} className="avatar-img" alt="avatar" />
+          <img
+            src={profile.avatar}
+            className="avatar-img"
+            alt={`${profile.name}'s avatar`}
+          />
+
           {profile.name === currentUser && (
             <button
               className="edit-profile-btn"
@@ -282,42 +288,26 @@ export default function ProfilePage() {
           <EditProfilePopup
             currentAvatar={profile.avatar}
             currentBio={profile.bio}
-            onSave={async (formData) => {
+            onSave={async (formData: FormData) => {
               if (!token) return;
               try {
-                const res = await fetch("http://127.0.0.1:5000/profile/update", {
-                  method: "POST",
-                  headers: { Authorization: `Bearer ${token}` },
-                  body: formData,
-                });
-
+                const res = await fetch(
+                  "http://127.0.0.1:5000/profile/update",
+                  { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }
+                );
                 const result = await res.json();
-
                 if (res.ok) {
-                  // Try to find the avatar URL in multiple possible shapes
-                  const rawAvatarUrl =
-                    result.avatarUrl ||
-                    result.profile?.avatarUrl ||
-                    result.user?.avatarUrl ||
-                    null;
-
-                  // Turn relative "/uploads/..." into a full URL
-                  const fullAvatarUrl =
-                    rawAvatarUrl && !rawAvatarUrl.startsWith("http")
-                      ? `http://127.0.0.1:5000${rawAvatarUrl}`
-                      : rawAvatarUrl;
-
+                  const newAvatarUrl = result.avatarUrl
+                    ? "http://127.0.0.1:5000" + result.avatarUrl
+                    : profile.avatar;
                   setProfile((prev) => ({
                     ...prev,
-                    bio: String(formData.get("bio") ?? prev.bio),
-                    avatar: fullAvatarUrl || prev.avatar,
+                    bio: formData.get("bio") as string,
+                    avatar: formData.get("avatar") instanceof File ? newAvatarUrl : prev.avatar,
                   }));
-
                   alert("Profile updated successfully!");
                   setShowPopup(null);
-                } else {
-                  alert(result.error || "Failed to update profile");
-                }
+                } else alert(result.error || "Failed to update profile");
               } catch (err) {
                 console.error(err);
                 alert("Network error while updating profile");
@@ -326,7 +316,6 @@ export default function ProfilePage() {
           />
         </PopupModal>
       )}
-
 
       {/* Albums */}
       <section className="profile-albums">
