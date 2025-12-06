@@ -37,7 +37,7 @@ interface DecodedToken {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        setUsername(null);
+        localStorage.removeItem("username");
         navigate("/login");
     };
 
@@ -48,12 +48,15 @@ interface DecodedToken {
             <Link to="/" className="nav-button">Home</Link>
             <Link to="/explore" className="nav-button">Explore</Link>
             <Link to="/albums" className="nav-button">My Albums</Link>
+            {username && (
             <Link to="/profile" className="nav-button">Profile</Link>
+            )}
 
             {!username ? (
             <Link to="/login" className="nav-button">Login</Link>
             ) : (
-            <button onClick={handleLogout} className="nav-button">Logout</button>
+            <Link to="/login" className="nav-button" onClick={handleLogout}>Logout</Link>
+
             )}
         </nav>
         </header>

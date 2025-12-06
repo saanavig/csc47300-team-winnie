@@ -17,6 +17,7 @@ import { NotFound } from './types/NotFound';
 import "./styles/Global.css";
 
 
+import PublicProfilePage from "./types/PublicProfilePage";
 // import ProjectInfo from './pages/ProjectInfo';
 import './App.css';
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/admin/user-management" element={<UserManagement />} />
     
 
+          <Route path="/users/:username" element={<PublicProfilePage />} /> {/* others */}
         </Routes>
       </div>
     </Router>

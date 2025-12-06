@@ -43,8 +43,25 @@ onNext,
     useEffect(() => {
         if (photos.length > 0) {
         setShuffledPhotos(shufflePhotos(photos));
-        }
+        setCurrentIndex(0); // reset to start on new photo set
+        } else {
+        setShuffledPhotos([]);
+        setCurrentIndex(0);
+    }
     }, [photos, shufflePhotos]);
+
+    // keep currentIndex in range if shuffledPhotos length changes
+    useEffect(() => {
+      if (shuffledPhotos.length === 0) {
+        setCurrentIndex(0);
+        return;
+      }
+      setCurrentIndex((idx) => {
+        if (idx >= shuffledPhotos.length) return 0;
+        if (idx < 0) return shuffledPhotos.length - 1;
+        return idx;
+      });
+    }, [shuffledPhotos]);
 
     // auto-advance the slider every 5s
     useEffect(() => {
@@ -90,8 +107,9 @@ onNext,
             <div
                 key={photo.id}
                 className={`slide ${index === currentIndex ? "active" : ""}`}
-                style={{ backgroundImage: `url(${photo.url})` }}
-            >
+             >
+               {/* Use an actual img element to avoid background-image sizing/CSS issues */}
+               <img src={photo.url} alt={`Slide ${index}`} className="slide-img" />
                 <div className="slide-content">
                 {photo.tags.length > 0 && (
                     <div className="slide-tags">

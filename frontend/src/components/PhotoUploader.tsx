@@ -4,9 +4,10 @@ import { Photo } from "../types";
 
 interface PhotoUploaderProps {
   onPhotoUploaded: (photo: Photo) => void;
+  albumId?: string | null;
 }
 
-export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
+export default function PhotoUploader({ onPhotoUploaded, albumId }: PhotoUploaderProps) {
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const [imageUrl, setImageUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -14,6 +15,8 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   const [tags, setTags] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   // Warning detection for styling
   const isWarning = Boolean(
     error &&
@@ -95,7 +98,7 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
   };
 
   // submit: validate again, parse tags, construct Photo object, and call parent callback
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     // Prevent submit if validation error present
@@ -113,11 +116,83 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
       return;
     }
 
+    // parse tags for both server upload and fallback
     const tagsArray = tags
       .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
+      .map((t) => t.trim())
+      .filter(Boolean);
 
+    // If we have an albumId and auth token, upload the file to the backend
+    const token = localStorage.getItem("token");
+    if (uploadType === "file" && file && albumId && token) {
+      setCreating(true);
+      setCreateError(null);
+      try {
+        const form = new FormData();
+        form.append("photos", file, file.name);
+        // send tags for these uploaded photos (as JSON array)
+         if (tagsArray.length > 0) {
+           form.append("tags", JSON.stringify(tagsArray));
+         }
+
+        // backend expects Authorization: Bearer <token>
+        const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/add-photos`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: form,
+        });
+
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          throw new Error(json.error || `Server returned ${res.status}`);
+        }
+
+        const json = await res.json();
+        // response can be either array of URL strings or array of photo objects
+        const returned = json.photos || [];
+        returned.forEach((item: any, idx: number) => {
+          let url = "";
+          let id = `${Date.now()}-${idx}`;
+          let returnedTags: string[] = tagsArray;
+          let uploadDate = new Date().toISOString();
+          if (typeof item === "string") {
+            url = item;
+          } else if (item && typeof item === "object") {
+            url = item.url || item.secure_url || "";
+            id = item.id || id;
+            returnedTags = Array.isArray(item.tags) ? item.tags : returnedTags;
+            uploadDate = item.uploadDate || item.createdAt || uploadDate;
+          }
+          if (url) {
+            const newPhoto: Photo = {
+              id,
+              url,
+              tags: returnedTags,
+              uploadDate,
+              albumId,
+            };
+            onPhotoUploaded(newPhoto);
+          }
+        });
+
+        // reset form state
+        setImageUrl("");
+        setFile(null);
+        setFileName("");
+        setTags("");
+        setPreviewUrl("");
+        setError("");
+      } catch (err: any) {
+        setCreateError(err?.message || "Upload failed");
+      } finally {
+        setCreating(false);
+      }
+      return;
+    }
+
+    // Fallback: client-side only (preview/dataURL or external URL)
     const newPhoto: Photo = {
       id: Date.now().toString(),
       url: uploadType === "file" ? previewUrl : imageUrl,
@@ -143,7 +218,6 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
     <div className="photo-uploader">
       <h2>Upload a New Memory</h2>
 
-      
       {error && (
         <p
           className={`upload-error ${isWarning ? "warning" : "error"}`}
@@ -152,6 +226,8 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
           {error}
         </p>
       )}
+
+      {createError && <p className="upload-error" role="alert">{createError}</p>}
 
       <div className="upload-type-toggle">
         <button
@@ -216,8 +292,8 @@ export default function PhotoUploader({ onPhotoUploaded }: PhotoUploaderProps) {
           </div>
         )}
 
-        <button type="submit" className="upload-button">
-          Upload Photo
+        <button type="submit" className="upload-button" disabled={creating}>
+          {creating ? "Uploading…" : "Upload Photo"}
         </button>
       </form>
     </div>
