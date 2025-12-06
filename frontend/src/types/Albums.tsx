@@ -119,6 +119,7 @@ export default function Albums() {
       try {
         const form = new FormData();
         form.append('title', newAlbumName);
+        form.append('privacy', newAlbumPrivacy);
         // backend expects files under 'photos' (list) — send cover as single photo
         form.append('photos', coverFile, coverFile.name);
 
@@ -143,7 +144,7 @@ export default function Albums() {
           name: serverAlbum.title || newAlbumName,
           coverPhoto: serverAlbum.coverUrl || serverAlbum.photos?.[0] || undefined,
           photoCount: (serverAlbum.photos && serverAlbum.photos.length) || 0,
-          privacy: newAlbumPrivacy,
+          privacy: serverAlbum.privacy || newAlbumPrivacy,
           createdAt: serverAlbum.createdAt || new Date().toISOString(),
         };
 
