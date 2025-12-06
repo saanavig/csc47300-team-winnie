@@ -16,7 +16,7 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
 
   // filter photos by tag when filterTag is provided
   const filteredPhotos = filterTag
-    ? photos.filter((photo) => photo.tags.includes(filterTag))
+    ? photos.filter((photo) => (photo.tags || []).includes(filterTag))
     : photos;
 
   const openModal = (photo: Photo) => {
@@ -57,7 +57,7 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
               <img src={photo.url} alt="Memory" />
               <div className="photo-overlay">
                 {/* Map tags array to small badges for each photo */}
-                {photo.tags.map((tag) => (
+                {(photo.tags || []).map((tag) => (
                   <span key={tag} className="photo-tag">
                     {tag}
                   </span>
@@ -84,7 +84,7 @@ export default function PhotoGrid({ photos, filterTag }: PhotoGridProps) {
             <img src={selectedPhoto.url} alt="Full size" />
             <div className="modal-info">
               <div className="modal-tags">
-                {selectedPhoto.tags.map((tag) => (
+                {(selectedPhoto.tags || []).map((tag) => (
                   <span key={tag} className="modal-tag">
                     {tag}
                   </span>

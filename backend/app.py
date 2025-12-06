@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 from datetime import datetime
+import json
 
 import cloudinary
 import cloudinary.uploader
@@ -24,13 +25,26 @@ app.config["UPLOAD_FOLDER"] = "uploads"
 
 jwt = JWTManager(app)
 
-client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True)
+client = MongoClient(os.getenv("MONGO_URI"), tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=5000)
 db = client["project-winnie"]
 users_collection = db["users"]
 
+# add a simple DB connectivity check flag
+DB_CONNECTED = False
+try:
+    client.admin.command("ping")
+    DB_CONNECTED = True
+    print("✅ MongoDB connected")
+except Exception as e:
+    DB_CONNECTED = False
+    print("❌ MongoDB connection failed at startup:", e)
+
 def setup_indexes():
-    users_collection.create_index("username", unique=True)
-    users_collection.create_index("email", unique=True)
+    try:
+        users_collection.create_index("username", unique=True)
+        users_collection.create_index("email", unique=True)
+    except Exception as e:
+        print("⚠️ setup_indexes: could not create indexes (DB not available):", e)
 
 setup_indexes()
 
@@ -80,7 +94,7 @@ def signup():
 
     return jsonify({"message": "Signup successful!"}), 201
 
-# login
+# login route - wrap DB ops so a DB error doesn't crash the server
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -90,9 +104,16 @@ def login():
     if not identifier or not password:
         return jsonify({"error": "Email/Username and password are required"}), 400
 
-    user = users_collection.find_one({
-        "$or": [{"email": identifier}, {"username": identifier}]
-    })
+    if not DB_CONNECTED:
+        return jsonify({"error": "Database unavailable. Try again later."}), 503
+
+    try:
+        user = users_collection.find_one({
+            "$or": [{"email": identifier}, {"username": identifier}]
+        })
+    except Exception as e:
+        print("❌ DB error in /login:", e)
+        return jsonify({"error": "Database error"}), 500
 
     if not user or not check_password_hash(user["password"], password):
         return jsonify({"error": "Invalid email/username or password"}), 401
@@ -268,18 +289,40 @@ def create_album():
     if not title:
         return jsonify({"error": "Album title is required"}), 400
 
+    # optional tags (JSON array or CSV string) applies to all uploaded photos
+    raw_tags = request.form.get("tags")
+    tags_for_all = []
+    if raw_tags:
+        try:
+            tags_for_all = json.loads(raw_tags)
+            if not isinstance(tags_for_all, list):
+                tags_for_all = []
+        except Exception:
+            tags_for_all = [t.strip() for t in raw_tags.split(",") if t.strip()]
+
     files = request.files.getlist("photos")
     if not files:
         return jsonify({"error": "At least one photo is required"}), 400
 
-    uploaded_urls = [cloudinary.uploader.upload(f).get("secure_url") for f in files]
+    uploaded_results = [cloudinary.uploader.upload(f) for f in files]
+    uploaded_urls = [r.get("secure_url") for r in uploaded_results]
+
+    # create photo objects (id, url, tags, uploadDate)
+    photo_objs = []
+    for idx, url in enumerate(uploaded_urls):
+        photo_objs.append({
+            "id": str(uuid.uuid4()),
+            "url": url,
+            "tags": tags_for_all if tags_for_all else [],
+            "uploadDate": datetime.utcnow().isoformat()
+        })
 
     album = {
         "id": str(uuid.uuid4()),
         "title": title,
-        "photos": uploaded_urls,
-        "createdAt": datetime.utcnow(),
-        "coverUrl": uploaded_urls[0] if uploaded_urls else None,
+        "photos": photo_objs,
+        "createdAt": datetime.utcnow().isoformat(),
+        "coverUrl": photo_objs[0]["url"] if photo_objs else None,
         "owner": current_user,
         "collaborators": []
     }
@@ -357,6 +400,17 @@ def add_photos_to_album(album_id):
     if not files:
         return jsonify({"error": "At least one photo is required"}), 400
 
+    # tags param (applies to these uploaded photos)
+    raw_tags = request.form.get("tags")
+    tags_for_all = []
+    if raw_tags:
+        try:
+            tags_for_all = json.loads(raw_tags)
+            if not isinstance(tags_for_all, list):
+                tags_for_all = []
+        except Exception:
+            tags_for_all = [t.strip() for t in raw_tags.split(",") if t.strip()]
+
     user = users_collection.find_one({"albums.id": album_id}, {"albums.$": 1})
     if not user:
         return jsonify({"error": "Album not found"}), 404
@@ -365,19 +419,28 @@ def add_photos_to_album(album_id):
     if current_user != album["owner"] and current_user not in album.get("collaborators", []):
         return jsonify({"error": "Not authorized to modify this album"}), 403
 
-    uploaded_urls = []
+    uploaded_objs = []
     for file in files:
         result = cloudinary.uploader.upload(file)
-        uploaded_urls.append(result.get("secure_url"))
+        url = result.get("secure_url")
+        obj = {
+            "id": str(uuid.uuid4()),
+            "url": url,
+            "tags": tags_for_all if tags_for_all else [],
+            "uploadDate": datetime.utcnow().isoformat()
+        }
+        uploaded_objs.append(obj)
 
+    # push objects into album.photos
     users_collection.update_one(
         {"albums.id": album_id},
-        {"$push": {"albums.$.photos": {"$each": uploaded_urls}}}
+        {"$push": {"albums.$.photos": {"$each": uploaded_objs}}}
     )
 
+    # return the created photo objects
     return jsonify({
-        "message": f"{len(uploaded_urls)} photo(s) added successfully!",
-        "photos": uploaded_urls
+        "message": f"{len(uploaded_objs)} photo(s) added successfully!",
+        "photos": uploaded_objs
     }), 200
 
 # remove photo (owner or collaborator)
