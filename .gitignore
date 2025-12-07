@@ -53,3 +53,7 @@ coverage/
 *.coverage
 *.pytest_cache
 jest-cache/
+
+#profile images
+backend/uploads/
+
