@@ -45,6 +45,9 @@ export default function ProfilePage() {
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [friendRequests, setFriendRequests] = useState<string[]>([]);
+  const [albumInvites, setAlbumInvites] = useState<
+    { album_id: string; album_title: string; inviter: string }[]
+  >([]);
 
   /** Fetch profile */
   useEffect(() => {
@@ -140,6 +143,25 @@ export default function ProfilePage() {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
 
+  /** Fetch album invites whenever notifications popup opens */
+  useEffect(() => {
+    if (!token || showPopup !== "notifications") return;
+
+    const fetchAlbumInvites = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/albums/invites", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (res.ok) setAlbumInvites(json.invites || []);
+      } catch (err) {
+        console.error("Failed to fetch album invites:", err);
+      }
+    };
+
+    fetchAlbumInvites();
+  }, [token, showPopup]);
+
   /** Add friend */
   const handleAddFriend = async (username: string): Promise<string> => {
     if (!token) throw new Error("No token");
@@ -157,6 +179,26 @@ export default function ProfilePage() {
       throw new Error(json.error || "❌ Something went wrong.");
     } catch (err: any) {
       throw new Error(err.message || "❌ Network error");
+    }
+  };
+
+  /** Accept or decline album invite */
+  const handleAlbumInvite = async (albumId: string, action: "accept" | "decline") => {
+    if (!token) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/invite/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action }),
+      });
+      const result = await res.json();
+      alert(result.message || result.error);
+
+      // Remove invite from local state
+      setAlbumInvites(prev => prev.filter(inv => inv.album_id !== albumId));
+    } catch (err) {
+      console.error(err);
+      alert("❌ Network error.");
     }
   };
 
@@ -189,7 +231,6 @@ export default function ProfilePage() {
     );
   }
 
-
   return (
     <div className="profile-page">
       <header className="profile-header">
@@ -210,8 +251,10 @@ export default function ProfilePage() {
                 onClick={() => setShowPopup("notifications")}
               >
                 Notifications
-                {friendRequests.length > 0 && (
-                  <span className="notification-badge">{friendRequests.length}</span>
+                {friendRequests.length + albumInvites.length > 0 && (
+                  <span className="notification-badge">
+                    {friendRequests.length + albumInvites.length}
+                  </span>
                 )}
               </button>
               <button
@@ -270,50 +313,64 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Popups (Add, Notifications, Followers, Following, Edit Profile) */}
+      {/* Popups */}
       {showPopup === "add" && (
         <PopupModal title="Add Friend" onClose={() => setShowPopup(null)}>
           <AddFriendPopup onAdd={handleAddFriend} />
         </PopupModal>
       )}
+
       {showPopup === "notifications" && (
-        <PopupModal title="Friend Requests" onClose={() => setShowPopup(null)}>
+        <PopupModal title="Notifications" onClose={() => setShowPopup(null)}>
+          {/* Friend Requests */}
           {friendRequests.length ? (
             friendRequests.map((req: string) => (
-              <FriendRequestItem 
-                key={req} 
-                username={req} 
+              <FriendRequestItem
+                key={req}
+                username={req}
                 token={token}
                 onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
               />
             ))
-          ) : (
-            <p>No pending requests</p>
-          )}
+          ) : null}
+
+          {/* Album Invites */}
+          {albumInvites.length ? (
+            albumInvites.map(invite => (
+              <div key={invite.album_id} className="notification-item">
+                {invite.inviter} invited you to collaborate on "{invite.album_title}"
+                <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>
+                  Accept
+                </button>
+                <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>
+                  Decline
+                </button>
+              </div>
+            ))
+          ) : <p>No pending album invites</p>}
         </PopupModal>
       )}
+
       {showPopup === "followers" && (
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
           {data?.followers?.length ? (
-            data.followers.map((u: string) => (
-              <FollowerRow key={u} username={u} />
-            ))
+            data.followers.map((u: string) => <FollowerRow key={u} username={u} />)
           ) : (
             <p>No followers yet</p>
           )}
         </PopupModal>
       )}
+
       {showPopup === "following" && (
         <PopupModal title="Following" onClose={() => setShowPopup(null)}>
           {data?.following?.length ? (
-            data.following.map((u: string) => (
-              <FollowerRow key={u} username={u} />
-            ))
+            data.following.map((u: string) => <FollowerRow key={u} username={u} />)
           ) : (
             <p>Not following anyone</p>
           )}
         </PopupModal>
       )}
+
       {showPopup === "editProfile" && (
         <PopupModal title="Edit Profile" onClose={() => setShowPopup(null)}>
           <EditProfilePopup
@@ -348,91 +405,90 @@ export default function ProfilePage() {
         </PopupModal>
       )}
 
-    {/* Albums */}
-  <div className="tabs-bar">
-    <button className="tab active">My Albums</button>
-  </div>
+      {/* Albums */}
+      <div className="tabs-bar">
+        <button className="tab active">My Albums</button>
+      </div>
 
-  <section className="profile-albums">
-    <div className="albums-grid">
-      {albums.map((album, idx) => {
-        const popupId = `menu-${album.id}`;
-        const inviteId = `invite-${album.id}`;
+      <section className="profile-albums">
+        <div className="albums-grid">
+          {albums.map((album, idx) => {
+            const popupId = `menu-${album.id}`;
+            const inviteId = `invite-${album.id}`;
 
-        return (
-          <article key={album.id || idx} className="album-card">
-            <div className="album-media">
-              <img src={album.cover} alt={album.title} />
+            return (
+              <article key={album.id || idx} className="album-card">
+                <div className="album-media">
+                  <img src={album.cover} alt={album.title} />
 
-              {/* Three-dot menu button */}
-              <button
-                className="album-menu-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowPopup(popupId);
-                }}
-              >
-                ⋮
-              </button>
-
-              {/* Small dropdown menu */}
-              {showPopup === popupId && (
-                <div
-                  className="album-menu-dropdown"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                  {/* Three-dot menu button */}
                   <button
-                    className="dropdown-item"
-                    onClick={() => setShowPopup(inviteId)}
+                    className="album-menu-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowPopup(popupId);
+                    }}
                   >
-                    Invite Friends
+                    ⋮
                   </button>
 
-                  <button
-                    className="dropdown-item delete"
-                    onClick={() => alert("Delete album coming soon")}
-                  >
-                    Delete Album
-                  </button>
+                  {/* Small dropdown menu */}
+                  {showPopup === popupId && (
+                    <div
+                      className="album-menu-dropdown"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        className="dropdown-item"
+                        onClick={() => setShowPopup(inviteId)}
+                      >
+                        Invite Friends
+                      </button>
+
+                      <button
+                        className="dropdown-item delete"
+                        onClick={() => alert("Delete album coming soon")}
+                      >
+                        Delete Album
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="album-meta">
-              <h3 className="album-title">{album.title}</h3>
+                <div className="album-meta">
+                  <h3 className="album-title">{album.title}</h3>
 
-              <div className="album-avatars">
-                {album.contributors.slice(0, 3).map((c, i) => (
-                  <img
-                    key={i}
-                    src={c.avatar}
-                    alt={c.name}
-                    title={c.name}
-                    className="album-avatar"
-                  />
-                ))}
-              </div>
-            </div>
-          </article>
-        );
+                  <div className="album-avatars">
+                    {album.contributors.slice(0, 3).map((c, i) => (
+                      <img
+                        key={i}
+                        src={c.avatar}
+                        alt={c.name}
+                        title={c.name}
+                        className="album-avatar"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Album Invite Popups moved outside of the grid/cards */}
+      {albums.map((album) => {
+        const inviteId = `invite-${album.id}`;
+        return showPopup === inviteId ? (
+          <PopupModal key={inviteId} onClose={() => setShowPopup(null)} title="Invite Friends">
+            <InviteFriendsPopup
+              albumId={album.id!}
+              token={token}
+              onClose={() => setShowPopup(null)}
+            />
+          </PopupModal>
+        ) : null;
       })}
-    </div>
-  </section>
-
-  {/* Album Invite Popups moved outside of the grid/cards */}
-  {albums.map((album) => {
-    const inviteId = `invite-${album.id}`;
-    return showPopup === inviteId ? (
-      <PopupModal key={inviteId} onClose={() => setShowPopup(null)} title="Invite Friends">
-        <InviteFriendsPopup
-          albumId={album.id!}
-          token={token}
-          onClose={() => setShowPopup(null)}
-        />
-      </PopupModal>
-    ) : null;
-  })}
-
     </div>
   );
 }

@@ -533,9 +533,22 @@ def invite_collaborator(album_id):
     if collaborator_username in album.get("collaborators", []):
         return jsonify({"error": "User is already a collaborator"}), 400
 
+    # 1️⃣ Add to pending collaborator requests instead of collaborators
     users_collection.update_one(
         {"username": current_user, "albums.id": album_id},
-        {"$push": {"albums.$.collaborators": collaborator_username}}
+        {"$addToSet": {"albums.$.collaborator_requests": collaborator_username}}
+    )
+
+    # 2️⃣ Add notification for invited user
+    users_collection.update_one(
+        {"username": collaborator_username},
+        {"$push": {"notifications": {
+            "type": "album_invite",
+            "album_id": album_id,
+            "inviter": current_user,
+            "status": "pending",
+            "timestamp": datetime.utcnow()
+        }}}
     )
 
     return jsonify({"message": f"You have successfully requested {collaborator_username} to be a collaborator!"}), 200
@@ -703,6 +716,18 @@ def join_album(album_id):
 def get_user_avatar(username):
     user = db.users.find_one({"username": username})
     return user.get("avatarUrl") if user else "https://i.pravatar.cc/80"
+
+# notifications for collabs
+@app.route("/notifications", methods=["GET"])
+@jwt_required()
+def get_notifications():
+    current_user = get_jwt_identity()
+    user = users_collection.find_one(
+        {"username": current_user}, 
+        {"notifications": 1}
+    )
+    return jsonify({"notifications": user.get("notifications", [])}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
