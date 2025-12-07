@@ -8,6 +8,7 @@ import { Album } from './index';
 export default function Albums() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [expandedCategories, setExpandedCategories] = useState({
     private: true,
@@ -39,8 +40,10 @@ export default function Albums() {
 
   // Load albums from sessionStorage once on mount
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+
     const loadAlbums = async () => {
-      const token = localStorage.getItem("token");
       if (token) {
         try {
           const res = await fetch("http://127.0.0.1:5000/albums/list", {
@@ -261,98 +264,113 @@ export default function Albums() {
 
   return (
     <div className="albums-page">
-      <header className="albums-header">
-        <h1>My Albums</h1>
-        <button
-          className="create-album-btn primary"
-          onClick={() => setShowCreateModal(true)}
-        >
-          + Create New Album
-        </button>
-      </header>
-
-      {renderCategory(
-        'private',
-        'Private Albums',
-        'No private albums yet. Create an album to start storing your personal memories!'
-      )}
-
-      {renderCategory(
-        'shared',
-        'Shared Albums',
-        'No shared albums yet. Create a shared album to collaborate with friends and family!'
-      )}
-
-      {renderCategory(
-        'public',
-        'Public Albums',
-        'No public albums yet. Create a public album to share your memories with everyone!'
-      )}
-
-      {/* Create album modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Create New Album</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleCreateAlbum();
-              }}
-            >
-              <div className="form-group">
-                <label htmlFor="album-name">Album Name</label>
-                <input
-                  type="text"
-                  id="album-name"
-                  value={newAlbumName}
-                  onChange={(e) => setNewAlbumName(e.target.value)}
-                  placeholder="Enter album name"
-                  required
-                />
-              </div>
-
-             <div className="form-group">
-               <label htmlFor="album-cover">Album Cover (optional)</label>
-               <input
-                 type="file"
-                 id="album-cover"
-                 accept="image/*"
-                 onChange={handleCoverChange}
-               />
-               {coverPreview && (
-                 <div style={{ marginTop: 8 }}>
-                   <img src={coverPreview} alt="Cover preview" style={{ maxWidth: 180, borderRadius: 6 }} />
-                 </div>
-               )}
-             </div>
-
-              <div className="form-group">
-                <label htmlFor="album-privacy">Privacy Setting</label>
-                <select
-                  id="album-privacy"
-                  value={newAlbumPrivacy}
-                  onChange={(e) => setNewAlbumPrivacy(e.target.value as 'private' | 'shared' | 'public')}
-                >
-                  <option value="private">Private - Only you can see</option>
-                  <option value="shared">Shared - Share with specific people</option>
-                  <option value="public">Public - Everyone can see</option>
-                </select>
-              </div>
-
-              {createError && <p className="muted" style={{ color: 'red' }}>{createError}</p>}
-
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowCreateModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="primary" disabled={creating}>
-                  {creating ? 'Creating…' : 'Create Album'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {!isLoggedIn ? (
+        <div className="login-required-container">
+          <h1>Please Log In</h1>
+          <p>To create and view your albums, please log in to your account.</p>
+          <button
+            className="create-album-btn primary"
+            onClick={() => navigate('/login')}
+          >
+            Go to Login
+          </button>
         </div>
+      ) : (
+        <>
+          <header className="albums-header">
+            <h1>My Albums</h1>
+            <button
+              className="create-album-btn primary"
+              onClick={() => setShowCreateModal(true)}
+            >
+              + Create New Album
+            </button>
+          </header>
+
+          {renderCategory(
+            'private',
+            'Private Albums',
+            'No private albums yet. Create an album to start storing your personal memories!'
+          )}
+
+          {renderCategory(
+            'shared',
+            'Shared Albums',
+            'No shared albums yet. Create a shared album to collaborate with friends and family!'
+          )}
+
+          {renderCategory(
+            'public',
+            'Public Albums',
+            'No public albums yet. Create a public album to share your memories with everyone!'
+          )}
+
+          {/* Create album modal */}
+          {showCreateModal && (
+            <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h2>Create New Album</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCreateAlbum();
+                  }}
+                >
+                  <div className="form-group">
+                    <label htmlFor="album-name">Album Name</label>
+                    <input
+                      type="text"
+                      id="album-name"
+                      value={newAlbumName}
+                      onChange={(e) => setNewAlbumName(e.target.value)}
+                      placeholder="Enter album name"
+                      required
+                    />
+                  </div>
+
+                 <div className="form-group">
+                   <label htmlFor="album-cover">Album Cover (optional)</label>
+                   <input
+                     type="file"
+                     id="album-cover"
+                     accept="image/*"
+                     onChange={handleCoverChange}
+                   />
+                   {coverPreview && (
+                     <div style={{ marginTop: 8 }}>
+                       <img src={coverPreview} alt="Cover preview" style={{ maxWidth: 180, borderRadius: 6 }} />
+                     </div>
+                   )}
+                 </div>
+
+                  <div className="form-group">
+                    <label htmlFor="album-privacy">Privacy Setting</label>
+                    <select
+                      id="album-privacy"
+                      value={newAlbumPrivacy}
+                      onChange={(e) => setNewAlbumPrivacy(e.target.value as 'private' | 'shared' | 'public')}
+                    >
+                      <option value="private">Private - Only you can see</option>
+                      <option value="shared">Shared - Share with specific people</option>
+                      <option value="public">Public - Everyone can see</option>
+                    </select>
+                  </div>
+
+                  {createError && <p className="muted" style={{ color: 'red' }}>{createError}</p>}
+
+                  <div className="modal-actions">
+                    <button type="button" onClick={() => setShowCreateModal(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="primary" disabled={creating}>
+                      {creating ? 'Creating…' : 'Create Album'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
