@@ -1,4 +1,4 @@
-/*Part of Admin Interface*/
+/*part of admin interface*/
 btn {
     display: inline-flex;
     align-items: center;
@@ -32,14 +32,17 @@ btn {
   }
   
   .btn--ghost {
-    background-color: transparent;
-    color: var(--color-text-secondary);
-  }
-  
-  .btn--ghost:hover {
-    background-color: var(--color-surface-hover);
-    color: var(--color-text-primary);
-  }
+  background-color: #e6ecea;        
+  color: #000000;                   
+  border: 1px solid #e5e7eb;      
+}
+
+.btn--ghost:hover {
+  background-color: #000000;       
+  color: #ffffff;                 
+  border-color: #000000;         
+}
+
   
   .btn--danger {
     background-color: var(--color-status-rejected-bg);
