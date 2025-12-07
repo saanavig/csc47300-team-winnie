@@ -139,9 +139,7 @@ def profile():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    user["avatar"] = user.get("avatarUrl", "")
     return jsonify({"profile": user}), 200
-
 
 # edit profile
 @app.route("/profile/update", methods=["POST"])
@@ -169,20 +167,10 @@ def edit_profile():
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
-    users_collection.update_one(
-        {"username": {"$regex": f"^{current_user}$", "$options": "i"}},
-        {"$set": updates}
-    )
-
-    # Fetch updated user so frontend can refresh instantly
-    updated_user = users_collection.find_one(
-        {"username": {"$regex": f"^{current_user}$", "$options": "i"}},
-        {"_id": 0, "password": 0}
-    )
-
+    users_collection.update_one({"username": current_user}, {"$set": updates})
     return jsonify({
         "message": "Profile updated successfully!",
-        "profile": updated_user
+        "avatarUrl": updates.get("avatarUrl")
     }), 200
 
 # serve uploaded files
@@ -369,7 +357,7 @@ def list_albums():
     albums = []
     for user in users:
         for album in user.get("albums", []):
-            if album["owner"] == current_user or current_user in album.get("collaborators", []):
+            if album.get("owner") == current_user or current_user in album.get("collaborators", []):
                 albums.append(album)
 
     return jsonify({"albums": albums}), 200
@@ -591,7 +579,7 @@ def get_public_profile(username):
         "name": user.get("name"),
         "username": user.get("username"),
         "bio": user.get("bio"),
-        "avatarUrl": user.get("avatarUrl", ""),  
+        "avatar": user.get("avatarUrl"),
         "followers": len(user.get("followers", [])),
         "following": len(user.get("following", [])),
         "albums": user.get("albums", [])
@@ -602,25 +590,38 @@ def list_users():
     users = list(users_collection.find({}, {"_id":0, "username":1, "avatarUrl":1}))
     return jsonify({"users": users})
 
-# public albums for explore
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+
 @app.route("/albums/public", methods=["GET"])
 def list_public_albums():
-    # get all users and their albums
-    users = users_collection.find({}, {"_id": 0, "albums": 1, "username":1})
+    try:
+        # try to get current user; if not logged in, set as None
+        current_user = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user = get_jwt_identity()
+        except:
+            pass
 
-    public_albums = []
+        users = users_collection.find({}, {"_id": 0, "albums": 1, "username":1})
+        public_albums = []
 
-    for user in users:
-        for album in user.get("albums", []):
-            if album.get("privacy", "public") == "public":
-                public_albums.append({
-                    "id": album["id"],
-                    "title": album["title"],
-                    "img": album.get("coverUrl", ""),
-                    "owner": user["username"]
-                })
+        for user in users:
+            for album in user.get("albums", []):
+                if album.get("privacy", "public") == "public":
+                    public_albums.append({
+                        "id": album["id"],
+                        "title": album["title"],
+                        "img": album.get("coverUrl", ""),
+                        "owner": user["username"],
+                        "joined": current_user in album.get("collaborators", []) if current_user else False
+                    })
 
-    return jsonify({"albums": public_albums}), 200
+        return jsonify({"albums": public_albums}), 200
+    except Exception as e:
+        print("Error in /albums/public:", e)
+        return jsonify({"albums": []}), 500
+
 
 # user albums for profile view
 @app.route("/albums/user", methods=["GET"])
@@ -649,6 +650,59 @@ def list_user_albums():
 
     return jsonify({"albums": user_albums}), 200
 
+# join public album
+@app.route("/albums/<album_id>/join", methods=["POST"])
+@jwt_required()
+def join_album(album_id):
+    current_user = get_jwt_identity()
+
+    # Find the album owner document
+    owner_doc = users_collection.find_one({"albums.id": album_id})
+    if not owner_doc:
+        return jsonify({"error": "Album not found"}), 404
+
+    # Get the album
+    album = next((a for a in owner_doc["albums"] if a["id"] == album_id), None)
+    if not album:
+        return jsonify({"error": "Album not found"}), 404
+
+    # Cannot join if already owner
+    if album["owner"] == current_user:
+        return jsonify({"error": "You are the owner of this album"}), 400
+
+    # Already joined
+    if current_user in album.get("collaborators", []):
+        return jsonify({"message": "Already joined", "joined": True}), 200
+
+    # Add current user as collaborator in owner's album
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$push": {"albums.$.collaborators": current_user}}
+    )
+
+    # Add album reference to current user's albums as 'shared'
+    shared_album = {
+        "id": album["id"],
+        "title": album["title"],
+        "photos": album.get("photos", []),
+        "createdAt": album.get("createdAt"),
+        "coverUrl": album.get("coverUrl"),
+        "owner": album["owner"],
+        "collaborators": album.get("collaborators", []) + [current_user],
+        "privacy": "shared"
+    }
+
+    users_collection.update_one(
+        {"username": current_user},
+        {"$push": {"albums": shared_album}}
+    )
+
+    return jsonify({"message": "Joined album successfully!", "joined": True}), 200
+
+
+def get_user_avatar(username):
+    user = db.users.find_one({"username": username})
+    return user.get("avatarUrl") if user else "https://i.pravatar.cc/80"
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
