@@ -10,61 +10,97 @@ interface Album {
     img: string;
     owner: string;
     privacy?: 'public' | 'private' | 'shared';
-}
+    }
 
     const Explore: React.FC = () => {
     const navigate = useNavigate();
     const [query, setQuery] = useState("");
     const [albums, setAlbums] = useState<Album[]>([]);
     const [loading, setLoading] = useState(true);
+    const [joiningId, setJoiningId] = useState<string | null>(null);
 
-    // Fetch public albums from backend
+    const token = localStorage.getItem("token");
+
     useEffect(() => {
         const fetchAlbums = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/albums/public");
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
-            setAlbums(data.albums); // <-- get array from object
+            setAlbums(data.albums);
         } catch (err) {
             console.error("Failed to fetch albums:", err);
         } finally {
             setLoading(false);
         }
         };
-
         fetchAlbums();
     }, []);
 
-    // Filter albums based on search query
     const filteredAlbums = useMemo(
         () =>
-        albums.filter((a) =>
+        albums
+            .filter((a) =>
             a.title.toLowerCase().includes(query.trim().toLowerCase())
-        ),
+            )
+            .slice()
+            .reverse(),
         [albums, query]
     );
 
+    const joinAlbum = async (albumId: string | null) => {
+        if (!token) {
+        alert("You must be logged in to join an album.");
+        return;
+        }
+        if (!albumId) return;
+
+        setJoiningId(albumId);
+
+        try {
+        const res = await fetch("http://127.0.0.1:5000/albums/join", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ albumId }),
+        });
+
+        const result = await res.json().catch(() => ({}));
+
+        if (res.status === 401) {
+            alert("Unauthorized. Please log in again.");
+        } else if (res.status === 404) {
+            alert("Album not found.");
+        } else if (res.ok) {
+            alert(result.message || "Joined album successfully!");
+            // Refresh albums after joining
+            setAlbums(prev => prev.map(a => a.id === albumId ? { ...a } : a));
+            navigate("/albums", { state: { joinedAlbumId: albumId } });
+        } else {
+            alert(result.error || "Failed to join album");
+        }
+        } catch (err) {
+        console.error(err);
+        alert("Network error while joining album");
+        } finally {
+        setJoiningId(null);
+        }
+    };
+
     return (
         <main className="explore-page">
-        {/* Intro Header */}
         <div className="explore-intro">
             <h1>Explore</h1>
             <h2>Welcome to the Explore page! 🎉</h2>
-            <p>
-            Join public albums, connect with others, and celebrate the moments
-            that make life special.
-            </p>
+            <p>Join public albums, connect with others, and celebrate the moments that make life special.</p>
         </div>
 
-        {/* Hero Section */}
         <section className="explore-hero">
             <div className="hero-overlay">
             <h2>You’re Not Just Looking, You’re Belonging 💜</h2>
-            <p>
-                Explore the people, projects, and passions that make our
-                experience unforgettable.
-            </p>
+            <p>Explore the people, projects, and passions that make our experience unforgettable.</p>
             <button
                 className="btn hero-btn"
                 onClick={() =>
@@ -78,7 +114,6 @@ interface Album {
             </div>
         </section>
 
-        {/* Search */}
         <section className="explore-search">
             <div className="search-wrapper">
             <span className="search-icon">🔍</span>
@@ -93,30 +128,35 @@ interface Album {
             </div>
         </section>
 
-        {/* Loading / No Results */}
         {loading && <p className="muted">Loading albums...</p>}
-        {!loading && filteredAlbums.length === 0 && (
-            <p className="muted no-results">No matches found.</p>
-        )}
+        {!loading && filteredAlbums.length === 0 && <p className="muted no-results">No matches found.</p>}
 
-        {/* Grid of Cards */}
         <div className="explore-grid">
             {filteredAlbums.map((a) => (
             <div key={a.id ?? Math.random()} className="explore-card">
-                <img src={a.img} alt={a.title} className="card-img" />
+                {/* Fallback image if a.img is empty */}
+                <img
+                src={a.img || "https://via.placeholder.com/300x200?text=No+Image"}
+                alt={a.title}
+                className="card-img"
+                />
                 <div className="card-body">
                 <h2>{a.title}</h2>
                 <div className="avatars">
                     <div className="avatar">
                     <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        a.owner
-                        )}`}
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(a.owner)}`}
                         alt={a.owner}
                     />
                     </div>
                 </div>
-                <button className="btn">Join</button>
+                <button
+                    className="btn"
+                    onClick={() => a.id && joinAlbum(a.id)} // ensure id is not null
+                    disabled={joiningId === a.id}
+                >
+                    {joiningId === a.id ? "Joining…" : "Join"}
+                </button>
                 </div>
             </div>
             ))}
