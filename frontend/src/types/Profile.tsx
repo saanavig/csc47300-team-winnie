@@ -44,6 +44,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [friendRequests, setFriendRequests] = useState<string[]>([]);
 
   /** Fetch profile */
   useEffect(() => {
@@ -125,6 +126,7 @@ export default function ProfilePage() {
       });
       const json = await res.json();
       setData(json);
+      setFriendRequests(json.friendRequests?.incoming || []);
     } catch (err) {
       console.error("Failed to fetch friend data:", err);
     }
@@ -269,9 +271,14 @@ export default function ProfilePage() {
       )}
       {showPopup === "notifications" && (
         <PopupModal title="Friend Requests" onClose={() => setShowPopup(null)}>
-          {data?.friendRequests?.incoming?.length ? (
-            data.friendRequests.incoming.map((req: string) => (
-              <FriendRequestItem key={req} username={req} token={token} />
+          {friendRequests.length ? (
+            friendRequests.map((req: string) => (
+              <FriendRequestItem 
+                key={req} 
+                username={req} 
+                token={token}
+                onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
+              />
             ))
           ) : (
             <p>No pending requests</p>
@@ -408,7 +415,7 @@ function AddFriendPopup({ onAdd }: { onAdd: (username: string) => Promise<string
 }
 
 /** Friend Request Item Component */
-function FriendRequestItem({ username, token }: { username: string; token: string | null }) {
+function FriendRequestItem({ username, token, onRemove }: { username: string; token: string | null; onRemove: () => void }) {
   const handleResponse = async (action: string) => {
     try {
       const res = await fetch("http://127.0.0.1:5000/friends/respond", {
@@ -418,6 +425,7 @@ function FriendRequestItem({ username, token }: { username: string; token: strin
       });
       const result = await res.json();
       alert(result.message || result.error);
+      onRemove();
     } catch {
       alert("❌ Network error.");
     }
