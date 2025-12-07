@@ -46,6 +46,7 @@ const Explore: React.FC = () => {
     const filteredAlbums = useMemo(
         () =>
         albums
+        .filter((a) => !a.joined)
             .filter((a) =>
             a.title.toLowerCase().includes(query.trim().toLowerCase())
             )

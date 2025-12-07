@@ -357,7 +357,7 @@ def list_albums():
     albums = []
     for user in users:
         for album in user.get("albums", []):
-            if album["owner"] == current_user or current_user in album.get("collaborators", []):
+            if album.get("owner") == current_user or current_user in album.get("collaborators", []):
                 albums.append(album)
 
     return jsonify({"albums": albums}), 200
