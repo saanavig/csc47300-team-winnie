@@ -318,6 +318,10 @@ export default function ProfilePage() {
       )}
 
       {/* Albums */}
+      <div className="tabs-bar">
+        <button className="tab active">My Albums</button>
+      </div>
+
       <section className="profile-albums">
         <div className="albums-grid">
           {albums.map((album, idx) => (
