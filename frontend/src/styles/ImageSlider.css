@@ -1,5 +1,5 @@
 /* Container for the whole slider */
-.slider-container {
+.image-slider-container {
     position: relative;
     width: 100%;
     max-width: 1200px;
@@ -7,11 +7,11 @@
     height: 70vh;
     overflow: hidden;
     border-radius: 10px;
-    background-color: #000;
+    background-color: transparent;
 }
 
 /* Wrapper for slides */
-.slider {
+.image-slider {
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -19,18 +19,19 @@
   max-width: 1200px;
   margin: 0 auto;
   border-radius: 10px;
-  background-color: #000;
+  background-color: transparent;
 }
 
 /* Individual slide — stack all slides absolutely */
-.slide {
+.image-slide {
   position: absolute;
+  z-index: 1;
   inset: 0; /* shorthand for top/left/right/bottom = 0 */
   width: 100%;
   height: 100%;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 300ms ease, visibility 0ms linear 300ms;
+  transition: opacity 0.6s ease;
   pointer-events: none;
   /* rendering hint to avoid black flicker */
   transform: translateZ(0);
@@ -39,7 +40,7 @@
 }
 
 /* Active slide: visible and above others */
-.slide.active {
+.image-slide.active {
   opacity: 1;
   visibility: visible;
   transition-delay: 0ms;
@@ -48,7 +49,7 @@
 }
 
 /* img should fill slide area */
-.slide-img {
+.image-slide-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -58,9 +59,9 @@
 }
 
 /* Overlay content inside each slide */
-.slide-content {
+.image-slide-content {
     position: absolute;
-    bottom: 60px;
+    bottom: 16px;
     left: 16px;
     background: rgba(0, 0, 0, 0.6);
     padding: 10px 12px;
@@ -70,8 +71,8 @@
 }
 
 /* Place tags inside the content box (no longer absolutely positioned) */
-.slide-content .slide-tags,
-.slide-tags {
+.image-slide-content .image-slide-tags,
+.image-slide-tags {
     position: static;
     bottom: auto;
     left: auto;
@@ -83,7 +84,7 @@
     z-index: 5; /* sit above content background */
 }
 
-.slide-tag {
+.image-slide-tag {
     background-color: rgba(255, 255, 255, 0.85);
     color: #111;
     padding: 4px 10px;
@@ -93,7 +94,7 @@
 }
 
 /* Navigation arrows */
-.slider-arrow {
+.image-slider-arrow {
     position: absolute;
     top: 42%;
     transform: translateY(-40%);
@@ -112,20 +113,20 @@
     transition: background-color 0.3s;
 }
 
-.slider-arrow:hover {
+.image-slider-arrow:hover {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-.slider-arrow.left {
+.image-slider-arrow.left {
     left: 10px;
 }
 
-.slider-arrow.right {
+.image-slider-arrow.right {
     right: 10px;
 }
 
 /* Pagination dots */
-.slider-dots {
+.image-slider-dots {
     position: absolute;
     bottom: 80px;
     left: 50%;
@@ -135,7 +136,7 @@
     z-index: 2;
 }
 
-.slider-dot {
+.image-slider-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -144,11 +145,11 @@
     transition: background-color 0.3s;
 }
 
-.slider-dot:hover {
+.image-slider-dot:hover {
     background-color: rgba(255, 255, 255, 0.8);
 }
 
-.slider-dot.active {
+.image-slider-dot.active {
     background-color: white;
 }
 
@@ -190,23 +191,36 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .slider-container {
+    .image-slider-container {
         height: 50vh;
     }
-    .slider-arrow {
+    .image-slider-arrow {
         width: 30px;
         height: 30px;
         font-size: 16px;
     }
-    .slide-content {
+    .image-slide-content {
         max-width: 90%;
         font-size: 14px;
     }
 }
 
 @media (min-width: 1000px) {
-  .slide { height: 420px; }
+  .image-slide { height: 420px; }
 }
 @media (max-width: 600px) {
-  .slide { height: 220px; }
+  .image-slide { height: 220px; }
+}
+
+/* Fallback for images that fail to load */
+ .image-slide-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg,#111,#333);
+    color: #fff;
+    font-weight: 700;
+    z-index: 3;
 }

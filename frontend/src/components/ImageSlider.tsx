@@ -1,155 +1,138 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import "../styles/ImageSlider.css";
 
-
-import { useCallback, useEffect, useState } from "react";
-
 export interface Photo {
-    id: string | number;
-    url: string;
-    tags: string[];
+  id: string | number;
+  url: string;
+  tags: string[];
 }
 
 interface ImageSliderProps {
-photos: Photo[];
-currentIndex?: number;
-onPrev?: () => void;
-onNext?: () => void;
+  photos: Photo[];
 }
 
-export default function ImageSlider({
-photos,
-currentIndex: externalIndex,
-onPrev,
-onNext,
-}: ImageSliderProps) {
+export default function ImageSlider({ photos }: ImageSliderProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [shuffledPhotos, setShuffledPhotos] = useState<Photo[]>([]);
 
-    // index of the currently visible slide
-    const [currentIndex, setCurrentIndex] = useState<number>(0);
-    // local shuffled copy so original order isn't mutated
-    const [shuffledPhotos, setShuffledPhotos] = useState<Photo[]>([]);
+  // Load photos normally (no shuffle)
+  useEffect(() => {
+    setShuffledPhotos(photos);
+    setCurrentIndex(0);
+  }, [photos]);
 
-    // shuffle wrapped in useCallback so it doesn't recreate every render
-    const shufflePhotos = useCallback((photoArray: Photo[]): Photo[] => {
-        const shuffled = [...photoArray];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-    }, []);
+  // Keep index in range
+  useEffect(() => {
+    if (shuffledPhotos.length === 0) return;
 
-    // when photos prop changes, create a shuffled copy for this slider instance
-    useEffect(() => {
-        if (photos.length > 0) {
-        setShuffledPhotos(shufflePhotos(photos));
-        setCurrentIndex(0); // reset to start on new photo set
-        } else {
-        setShuffledPhotos([]);
-        setCurrentIndex(0);
-    }
-    }, [photos, shufflePhotos]);
+    setCurrentIndex((idx) => {
+      if (idx < 0) return shuffledPhotos.length - 1;
+      if (idx >= shuffledPhotos.length) return 0;
+      return idx;
+    });
+  }, [shuffledPhotos]);
 
-    // keep currentIndex in range if shuffledPhotos length changes
-    useEffect(() => {
-      if (shuffledPhotos.length === 0) {
-        setCurrentIndex(0);
-        return;
-      }
-      setCurrentIndex((idx) => {
-        if (idx >= shuffledPhotos.length) return 0;
-        if (idx < 0) return shuffledPhotos.length - 1;
-        return idx;
-      });
-    }, [shuffledPhotos]);
+  // Auto advance every 5s
+  useEffect(() => {
+    if (shuffledPhotos.length === 0) return;
 
-    // auto-advance the slider every 5s
-    useEffect(() => {
-        if (shuffledPhotos.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % shuffledPhotos.length);
+    }, 5000);
 
-        const interval = setInterval(() => {
-            // modulo basically ensures we're in range of existing photos
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % shuffledPhotos.length);
-        }, 5000);
+    return () => clearInterval(interval);
+  }, [shuffledPhotos]);
 
-        // reset interval on unmount or change.
-        return () => clearInterval(interval);
-    }, [shuffledPhotos]);
-
-    // Manual controls
-    const goToNext = () => {
-        if (shuffledPhotos.length === 0) return;
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % shuffledPhotos.length);
-    };
-
-    const goToPrevious = () => {
-        if (shuffledPhotos.length === 0) return;
-        setCurrentIndex((prevIndex) =>
-        // if at start go to end of list, otherwise decrement 1
-        prevIndex === 0 ? shuffledPhotos.length - 1 : prevIndex - 1
-        );
-    };
-
-    // shows an empty state when there are no photos
-    if (shuffledPhotos.length === 0) {
-        return (
-        <div className="empty-slider">
-            <h2>Add photos to see the slideshow</h2>
-        </div>
-        );
-    }
-
-    return (
-        <div className="slider-container">
-        <div className="slider">
-            {/* map each photo to a slide element */}
-            {shuffledPhotos.map((photo, index) => (
-            <div
-                key={photo.id}
-                className={`slide ${index === currentIndex ? "active" : ""}`}
-             >
-               {/* Use an actual img element to avoid background-image sizing/CSS issues */}
-               <img src={photo.url} alt={`Slide ${index}`} className="slide-img" />
-                <div className="slide-content">
-                {photo.tags.length > 0 && (
-                    <div className="slide-tags">
-                    {photo.tags.map((tag) => (
-                        // map tags to readable badges
-                        <span key={tag} className="slide-tag">
-                        {tag}
-                        </span>
-                    ))}
-                    </div>
-                )}
-                </div>
-            </div>
-            ))}
-        </div>
-
-        {/* Navigation Arrows */}
-        <button className="slider-arrow left" onClick={goToPrevious}>
-            ❮
-        </button>
-        <button className="slider-arrow right" onClick={goToNext}>
-            ❯
-        </button>
-
-        {/* Navigation Dots */}
-        <div className="slider-dots">
-            {shuffledPhotos.map((_, index) => (
-            <span
-                key={index}
-                className={`slider-dot ${index === currentIndex ? "active" : ""}`}
-                onClick={() => setCurrentIndex(index)}
-            ></span>
-            ))}
-        </div>
-
-        {/* Scroll Indicator */}
-        {/* <div className="scroll-indicator">
-            <span>Scroll Down</span>
-            <div className="scroll-arrow">↓</div>
-        </div> */}
-        </div>
+  // Manual navigation
+  const goToPrevious = () => {
+    if (shuffledPhotos.length === 0) return;
+    setCurrentIndex((prev) =>
+      prev === 0 ? shuffledPhotos.length - 1 : prev - 1
     );
+  };
+
+  const goToNext = () => {
+    if (shuffledPhotos.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % shuffledPhotos.length);
+  };
+
+  // Track image loading errors so we can surface a visible placeholder
+  const [erroredIndexes, setErroredIndexes] = useState<Record<number, boolean>>({});
+
+  // If no photos, show placeholder
+  if (shuffledPhotos.length === 0) {
+    return (
+      <div className="empty-slider">
+        <h2>Add photos to see the slideshow</h2>
+      </div>
+    );
+  }
+
+  return (
+    <div className="image-slider-container">
+      <div className="image-slider">
+        {shuffledPhotos.map((photo, index) => (
+          <div
+            key={photo.id}
+            className={`image-slide ${index === currentIndex ? "active" : ""}`}
+          >
+            {erroredIndexes[index] ? (
+              <div className="image-slide-fallback">Image failed to load</div>
+            ) : (
+              <img
+                src={photo.url}
+                alt={`Slide ${index}`}
+                className="image-slide-img"
+                onError={() => {
+                  setErroredIndexes((s) => ({ ...s, [index]: true }));
+                  // also log to console to help debugging in the browser
+                  // eslint-disable-next-line no-console
+                  console.error(`ImageSlider: failed to load image at index ${index}: ${photo.url}`);
+                }}
+                onLoad={() => {
+                  setErroredIndexes((s) => {
+                    if (!s[index]) return s;
+                    const copy = { ...s };
+                    delete copy[index];
+                    return copy;
+                  });
+                }}
+              />
+            )}
+
+            <div className="image-slide-content">
+              {photo.tags.length > 0 && (
+                <div className="image-slide-tags">
+                  {photo.tags.map((tag) => (
+                    <span key={tag} className="image-slide-tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Arrows */}
+      <button className="image-slider-arrow left" onClick={goToPrevious}>
+        ❮
+      </button>
+      <button className="image-slider-arrow right" onClick={goToNext}>
+        ❯
+      </button>
+
+      {/* Dots */}
+      <div className="image-slider-dots">
+        {shuffledPhotos.map((_, index) => (
+          <span
+            key={index}
+            className={`image-slider-dot ${index === currentIndex ? "active" : ""}`}
+            onClick={() => setCurrentIndex(index)}
+          ></span>
+        ))}
+      </div>
+    </div>
+  );
 }
