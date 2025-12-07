@@ -80,6 +80,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform .12s ease, background .2s ease, border-color .2s ease;
+  position: relative;
 }
 .profile-page .follow-btn:hover,
 .profile-page .secondary-btn:hover {
@@ -372,4 +373,22 @@
 }
 .follower-item .arrow:hover {
   color: #111827;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

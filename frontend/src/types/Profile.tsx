@@ -133,6 +133,10 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    fetchFriendData();
+  }, [token]);
+
+  useEffect(() => {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
 
@@ -202,10 +206,13 @@ export default function ProfilePage() {
                 </button>
               )}
               <button
-                className="secondary-btn"
+                className="secondary-btn notifications-btn"
                 onClick={() => setShowPopup("notifications")}
               >
                 Notifications
+                {friendRequests.length > 0 && (
+                  <span className="notification-badge">{friendRequests.length}</span>
+                )}
               </button>
               <button
                 className="secondary-btn"
