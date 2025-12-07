@@ -45,6 +45,7 @@ export default function ProfilePage() {
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [friendRequests, setFriendRequests] = useState<string[]>([]);
+  const [notification, setNotification] = useState<string | null>(null);
 
   /** Fetch profile */
   useEffect(() => {
@@ -139,6 +140,13 @@ export default function ProfilePage() {
   useEffect(() => {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
+
+  // auto-hides notif after 1.5 seconds
+  useEffect(() => {
+    if (!notification) return;
+    const t = setTimeout(() => setNotification(null), 1500);
+    return () => clearTimeout(t);
+  }, [notification]);
 
   /** Add friend */
   const handleAddFriend = async (username: string): Promise<string> => {
@@ -336,7 +344,7 @@ export default function ProfilePage() {
                     bio: formData.get("bio") as string,
                     avatar: formData.get("avatar") instanceof File ? newAvatarUrl : prev.avatar,
                   }));
-                  alert("Profile updated successfully!");
+                  setNotification("Profile updated successfully!");
                   setShowPopup(null);
                 } else alert(result.error || "Failed to update profile");
               } catch (err) {
@@ -345,6 +353,12 @@ export default function ProfilePage() {
               }
             }}
           />
+        </PopupModal>
+      )}
+
+      {notification && (
+        <PopupModal title="Success" onClose={() => setNotification(null)}>
+          <p>{notification}</p>
         </PopupModal>
       )}
 

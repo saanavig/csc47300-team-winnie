@@ -13,7 +13,7 @@
     padding: 20px;
     width: 400px;
     max-height: 80vh;
-    overflow-y: auto;
+    overflow: hidden;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
@@ -38,3 +38,14 @@
     background: #e8e8e8;
     cursor: pointer;
 }
+
+.popup-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(80vh - 80px);
+    box-sizing: border-box;
+    padding-right: 6px;
+}
+
+.popup-body::-webkit-scrollbar { width: 8px; }
+.popup-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
