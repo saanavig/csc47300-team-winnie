@@ -48,6 +48,7 @@ export default function ProfilePage() {
   const [albumInvites, setAlbumInvites] = useState<
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
+  const [notification, setNotification] = useState<string | null>(null);
 
   /** Fetch profile */
   useEffect(() => {
@@ -153,6 +154,12 @@ export default function ProfilePage() {
     };
     fetchAlbumInvites();
   }, [token, showPopup]);
+  // auto-hides notif after 1.5 seconds
+  useEffect(() => {
+    if (!notification) return;
+    const t = setTimeout(() => setNotification(null), 1500);
+    return () => clearTimeout(t);
+  }, [notification]);
 
   /** Add friend */
   const handleAddFriend = async (username: string): Promise<string> => {
@@ -350,7 +357,7 @@ export default function ProfilePage() {
                     bio: formData.get("bio") as string,
                     avatar: formData.get("avatar") instanceof File ? newAvatarUrl : prev.avatar,
                   }));
-                  alert("Profile updated successfully!");
+                  setNotification("Profile updated successfully!");
                   setShowPopup(null);
                 } else alert(result.error || "Failed to update profile");
               } catch (err) {
@@ -359,6 +366,12 @@ export default function ProfilePage() {
               }
             }}
           />
+        </PopupModal>
+      )}
+
+      {notification && (
+        <PopupModal title="Success" onClose={() => setNotification(null)}>
+          <p>{notification}</p>
         </PopupModal>
       )}
 
