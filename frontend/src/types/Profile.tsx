@@ -159,6 +159,31 @@ export default function ProfilePage() {
     setIsFollowing((prev) => !prev);
   };
 
+  /** Follower Row Component */
+  function FollowerRow({ username }: { username: string }) {
+    const [avatar, setAvatar] = useState<string>("");
+
+    useEffect(() => {
+      fetch(`http://127.0.0.1:5000/users/${username}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.avatarUrl) {
+            setAvatar(`http://127.0.0.1:5000${data.avatarUrl}`);
+          }
+        })
+        .catch(() => {});
+    }, [username]);
+
+    return (
+      <Link to={`/users/${username}`} className="follower-item">
+        <img src={avatar} className="follower-avatar" />
+        <span>{username}</span>
+        <span className="arrow">→</span>
+      </Link>
+    );
+  }
+
+
   return (
     <div className="profile-page">
       <header className="profile-header">
@@ -257,11 +282,7 @@ export default function ProfilePage() {
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
           {data?.followers?.length ? (
             data.followers.map((u: string) => (
-              <p key={u}>
-                <Link to={`/users/${u}`} className="profile-link">
-                  {u}
-                </Link>
-              </p>
+              <FollowerRow key={u} username={u} />
             ))
           ) : (
             <p>No followers yet</p>
@@ -272,11 +293,7 @@ export default function ProfilePage() {
         <PopupModal title="Following" onClose={() => setShowPopup(null)}>
           {data?.following?.length ? (
             data.following.map((u: string) => (
-              <p key={u}>
-                <Link to={`/users/${u}`} className="profile-link">
-                  {u}
-                </Link>
-              </p>
+              <FollowerRow key={u} username={u} />
             ))
           ) : (
             <p>Not following anyone</p>
