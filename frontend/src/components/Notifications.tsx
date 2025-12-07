@@ -74,7 +74,7 @@ interface NotificationsProps {
                 <button onClick={() => handleFriendResponse(req.username, "decline")}>Decline</button>
             </div>
             ))
-        ) : null}
+        ) :null}
 
         {/* Album Invites */}
         {albumInvites.length ? (

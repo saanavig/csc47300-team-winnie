@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import EditProfilePopup from "../components/EditProfilePopup";
 import InviteFriendsPopup from "../components/InviteFriendsPopup";
+import Notifications from "../components/Notifications";
 import PopupModal from "../components/PopupModal";
 
 interface ProfileType {
@@ -138,22 +139,44 @@ export default function ProfilePage() {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
 
-  /** Fetch album invites whenever notifications popup opens */
+  /** Fetch notifications (album invites and friend requests) */
   useEffect(() => {
-    if (!token || showPopup !== "notifications") return;
-    const fetchAlbumInvites = async () => {
+    if (!token) return;
+
+    const fetchNotifications = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/albums/invites", {
+        const res = await fetch("http://127.0.0.1:5000/notifications", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();
-        if (res.ok) setAlbumInvites(json.invites || []);
+        if (res.ok && json.notifications) {
+          const notifications = json.notifications || [];
+
+          // Extract album invites
+          const invites = notifications
+            .filter((n: any) => n.type === "album_invite")
+            .map((n: any) => ({
+              album_id: n.albumId,
+              album_title: n.albumTitle || "Unknown Album",
+              inviter: n.inviter,
+            }));
+          setAlbumInvites(invites);
+
+          // Extract friend requests (if they are in notifications)
+          const friends = notifications
+            .filter((n: any) => n.type === "friend_request")
+            .map((n: any) => ({ username: n.from }));
+          setFriendRequests(friends);
+        }
       } catch (err) {
-        console.error("Failed to fetch album invites:", err);
+        console.error("Failed to fetch notifications:", err);
       }
     };
-    fetchAlbumInvites();
-  }, [token, showPopup]);
+
+    fetchNotifications();
+  }, [token]);
+
+
   // auto-hides notif after 1.5 seconds
   useEffect(() => {
     if (!notification) return;
@@ -295,30 +318,16 @@ export default function ProfilePage() {
 
       {showPopup === "notifications" && (
         <PopupModal title="Notifications" onClose={() => setShowPopup(null)}>
-          {/* Friend Requests */}
-          {friendRequests.length ? (
-            friendRequests.map((req: string) => (
-              <FriendRequestItem
-                key={req}
-                username={req}
-                token={token}
-                onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
-              />
-            ))
-          ) : null}
-
-          {/* Album Invites */}
-          {albumInvites.length ? (
-            albumInvites.map(invite => (
-              <div key={invite.album_id} className="notification-item">
-                {invite.inviter} invited you to collaborate on "{invite.album_title}"
-                <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>Accept</button>
-                <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
-              </div>
-            ))
-          ) : <p>No pending album invites</p>}
+          <Notifications
+            token={token}
+            friendRequests={friendRequests.map(u => ({ username: u }))}
+            setFriendRequests={setFriendRequests}
+            albumInvites={albumInvites}
+            setAlbumInvites={setAlbumInvites}
+            onJoinAlbum={(album) => setAlbums(prev => [...prev, album])}
+          />
         </PopupModal>
-      )}
+    )}
 
       {showPopup === "followers" && (
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
