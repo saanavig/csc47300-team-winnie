@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
-  const [friendRequests, setFriendRequests] = useState<string[]>([]);
+  const [friendRequests, setFriendRequests] = useState<{ username: string }[]>([]);
   const [albumInvites, setAlbumInvites] = useState<
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
@@ -156,9 +156,10 @@ export default function ProfilePage() {
           const invites = notifications
             .filter((n: any) => n.type === "album_invite")
             .map((n: any) => ({
-              album_id: n.albumId,
+              album_id: n.album_id,
               album_title: n.albumTitle || "Unknown Album",
               inviter: n.inviter,
+              // title: n.album_title,
             }));
           setAlbumInvites(invites);
 
@@ -320,7 +321,7 @@ export default function ProfilePage() {
         <PopupModal title="Notifications" onClose={() => setShowPopup(null)}>
           <Notifications
             token={token}
-            friendRequests={friendRequests.map(u => ({ username: u }))}
+            friendRequests={friendRequests}   // pass as-is, no mapping
             setFriendRequests={setFriendRequests}
             albumInvites={albumInvites}
             setAlbumInvites={setAlbumInvites}

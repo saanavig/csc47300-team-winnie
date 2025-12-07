@@ -27,25 +27,60 @@ const Notifications: React.FC<NotificationsProps> = ({
     setAlbumInvites,
     onJoinAlbum,
 }) => {
-    const handleAcceptInvite = async (albumId: string) => {
+    console.log("Current albumInvites:", albumInvites);
+
+    const handleAcceptInvite = async (albumId: string | undefined) => {
+        console.log("Accept clicked, albumId:", albumId, "token:", token);
         if (!token || !albumId) return;
         try {
-            const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/join`, {
+            // Use the correct endpoint that matches your backend
+            const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/invite/respond`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}` 
+                },
+                body: JSON.stringify({ action: "accept" })  // Add the action parameter
             });
+            
+            const json = await res.json();
+            
             if (res.ok) {
+                alert(json.message || "Invite accepted!");
                 setAlbumInvites(albumInvites.filter((i) => i.album_id !== albumId));
-                const json = await res.json();
                 if (json.album) onJoinAlbum(json.album);
+            } else {
+                alert(json.error || "Failed to accept invite");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network error");
+        }
+    };
+
+    const handleDeclineInvite = async (albumId: string | undefined) => {
+        if (!albumId || !token) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/invite/respond`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}` 
+                },
+                body: JSON.stringify({ action: "decline" })
+            });
+            
+            const json = await res.json();
+            
+            if (res.ok) {
+                alert(json.message || "Invite declined");
+                setAlbumInvites(albumInvites.filter((i) => i.album_id !== albumId));
+            } else {
+                alert(json.error || "Failed to decline invite");
             }
         } catch (err) {
             console.error(err);
         }
-    };
-
-    const handleDeclineInvite = (albumId: string) => {
-        setAlbumInvites(albumInvites.filter((i) => i.album_id !== albumId));
     };
 
     const handleFriendResponse = async (username: string, action: "accept" | "decline") => {
@@ -61,6 +96,13 @@ const Notifications: React.FC<NotificationsProps> = ({
             console.error(err);
         }
     };
+
+    // DEBUG: check albumInvites for missing album_id
+    React.useEffect(() => {
+        albumInvites.forEach(invite => {
+            if (!invite.album_id) console.warn("Missing album_id in invite:", invite);
+        });
+    }, [albumInvites]);
 
     return (
         <div>
