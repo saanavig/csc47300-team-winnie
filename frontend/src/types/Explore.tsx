@@ -3,6 +3,7 @@ import "../styles/Explore.css";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
+import PopupModal from "../components/PopupModal";
 
 interface Album {
     id: string | null;
@@ -22,6 +23,7 @@ const Explore: React.FC = () => {
 
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username"); // current logged-in user
+    const [notification, setNotification] = useState<string | null>(null);
 
   // Fetch public albums
     useEffect(() => {
@@ -92,7 +94,8 @@ const Explore: React.FC = () => {
             )
         );
 
-        alert(result.message || "Joined album successfully!");
+        // show non-blocking popup for success
+        setNotification(result.message || "Joined album successfully!");
         } catch (err) {
         console.error(err);
         alert("Network error while joining album");
@@ -101,6 +104,13 @@ const Explore: React.FC = () => {
         }
     };
 
+
+    // auto-hide notification after 1.5 seconds
+    useEffect(() => {
+        if (!notification) return;
+        const t = setTimeout(() => setNotification(null), 1500);
+        return () => clearTimeout(t);
+    }, [notification]);
     return (
         <main className="explore-page">
         <div className="explore-intro">
@@ -186,6 +196,11 @@ const Explore: React.FC = () => {
             </div>
             ))}
         </div>
+        {notification && (
+            <PopupModal title="Success" onClose={() => setNotification(null)}>
+                <p>{notification}</p>
+            </PopupModal>
+        )}
         </main>
     );
 };
