@@ -424,7 +424,11 @@ export default function ProfilePage() {
     const inviteId = `invite-${album.id}`;
     return showPopup === inviteId ? (
       <PopupModal key={inviteId} onClose={() => setShowPopup(null)} title="Invite Friends">
-        <InviteFriendsPopup albumId={album.id!} />
+        <InviteFriendsPopup
+          albumId={album.id!}
+          token={token}
+          onClose={() => setShowPopup(null)}
+        />
       </PopupModal>
     ) : null;
   })}

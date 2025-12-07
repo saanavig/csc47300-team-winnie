@@ -538,7 +538,7 @@ def invite_collaborator(album_id):
         {"$push": {"albums.$.collaborators": collaborator_username}}
     )
 
-    return jsonify({"message": f"{collaborator_username} added as collaborator!"}), 200
+    return jsonify({"message": f"You have successfully requested {collaborator_username} to be a collaborator!"}), 200
 
 # remove collaborator (owner only)
 @app.route("/albums/<album_id>/remove-collaborator", methods=["POST"])
