@@ -392,3 +392,138 @@
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.album-media {
+  position: relative;
+}
+
+/* 3-dot button */
+.album-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
+.album-menu-btn:hover {
+  opacity: 0.7;
+}
+
+/* 3-dot menu button */
+.album-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  /* background: rgba(255, 255, 255, 0.9); */
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 5;
+  transition: background 0.2s ease;
+}
+
+.album-menu-btn:hover {
+  background: white;
+}
+
+/* Small dropdown menu under 3 dots */
+.album-menu-dropdown {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  width: 150px;
+
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+
+  z-index: 10;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Dropdown item */
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+/* Delete option = red */
+.dropdown-item.delete {
+  color: #e53935;
+}
+
+.dropdown-item.delete:hover {
+  background: #fdeaea;
+}
+/* Overlay behind any popup */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999; /* higher than dropdown */
+}
+
+/* Popup content box */
+.popup-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  position: relative; /* so close button works */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeInScale 0.15s ease-out;
+}
+
+/* Popup header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Close button */
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Fade + scale animation */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

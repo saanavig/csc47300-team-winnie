@@ -3,6 +3,7 @@ import "../styles/Profile.css";
 import { useEffect, useState } from "react";
 
 import EditProfilePopup from "../components/EditProfilePopup";
+import InviteFriendsPopup from "../components/InviteFriendsPopup";
 import { Link } from "react-router-dom";
 import PopupModal from "../components/PopupModal";
 
@@ -10,7 +11,6 @@ interface ProfileType {
   name: string;
   bio: string;
   avatar: string;
-  
   friends: string[];
 }
 
@@ -348,36 +348,87 @@ export default function ProfilePage() {
         </PopupModal>
       )}
 
-      {/* Albums */}
-      <div className="tabs-bar">
-        <button className="tab active">My Albums</button>
-      </div>
+    {/* Albums */}
+  <div className="tabs-bar">
+    <button className="tab active">My Albums</button>
+  </div>
 
-      <section className="profile-albums">
-        <div className="albums-grid">
-          {albums.map((album, idx) => (
-            <article key={album.id || idx} className="album-card">
-              <div className="album-media">
-                <img src={album.cover} alt={album.title} />
-              </div>
-              <div className="album-meta">
-                <h3 className="album-title">{album.title}</h3>
-                <div className="album-avatars">
-                  {album.contributors.slice(0, 3).map((c, i) => (
-                    <img
-                      key={i}
-                      src={c.avatar}
-                      alt={c.name}
-                      title={c.name}
-                      className="album-avatar"
-                    />
-                  ))}
+  <section className="profile-albums">
+    <div className="albums-grid">
+      {albums.map((album, idx) => {
+        const popupId = `menu-${album.id}`;
+        const inviteId = `invite-${album.id}`;
+
+        return (
+          <article key={album.id || idx} className="album-card">
+            <div className="album-media">
+              <img src={album.cover} alt={album.title} />
+
+              {/* Three-dot menu button */}
+              <button
+                className="album-menu-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPopup(popupId);
+                }}
+              >
+                ⋮
+              </button>
+
+              {/* Small dropdown menu */}
+              {showPopup === popupId && (
+                <div
+                  className="album-menu-dropdown"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="dropdown-item"
+                    onClick={() => setShowPopup(inviteId)}
+                  >
+                    Invite Friends
+                  </button>
+
+                  <button
+                    className="dropdown-item delete"
+                    onClick={() => alert("Delete album coming soon")}
+                  >
+                    Delete Album
+                  </button>
                 </div>
+              )}
+            </div>
+
+            <div className="album-meta">
+              <h3 className="album-title">{album.title}</h3>
+
+              <div className="album-avatars">
+                {album.contributors.slice(0, 3).map((c, i) => (
+                  <img
+                    key={i}
+                    src={c.avatar}
+                    alt={c.name}
+                    title={c.name}
+                    className="album-avatar"
+                  />
+                ))}
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  {/* Album Invite Popups moved outside of the grid/cards */}
+  {albums.map((album) => {
+    const inviteId = `invite-${album.id}`;
+    return showPopup === inviteId ? (
+      <PopupModal key={inviteId} onClose={() => setShowPopup(null)} title="Invite Friends">
+        <InviteFriendsPopup albumId={album.id!} />
+      </PopupModal>
+    ) : null;
+  })}
+
     </div>
   );
 }
