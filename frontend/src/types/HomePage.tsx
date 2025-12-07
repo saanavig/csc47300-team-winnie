@@ -30,21 +30,45 @@ interface Slide {
     const slides: Slide[] = [
     {
         id: 1,
-        url: "https://images.unsplash.com/photo-1543353071-10c8ba85a904?q=80&w=1600&auto=format&fit=crop",
-        caption: "Havana Oh nah nah, half my heart is in havana",
-        tags: ["travel", "Havana"],
+        url: "https://images.squarespace-cdn.com/content/v1/5af5f71c0dbda32cd6252624/1581193927666-Q1K4BAD27E75GBQFA26J/AdobeStock_317434149+heart+shaped+pizza.jpeg",
+        caption: "Nothing Like A Home Cooked Meal",
+        tags: ["Home Cooked Meal", "Ingredients", "Messy Kitchen", "Friday Night In"],
     },
     {
         id: 2,
-        url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop",
-        caption: "Summer light over linen",
-        tags: ["summer", "light"],
+        url: "https://images.alphacoders.com/683/thumb-1920-683731.jpg",
+        caption: "Summer Light over Linen",
+        tags: ["The Beautiful Sunset", "Summer", "Linen"],
     },
     {
         id: 3,
-        url: "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop",
-        caption: "Afternoon still life",
-        tags: ["afternoon", "still life"],
+        url: "https://collectionapi.metmuseum.org/api/collection/v1/iiif/437053/796070/main-image",
+        caption: "Afternoon Still Life",
+        tags: ["Afternoon", "Still Life", "Painting"],
+    },
+    {
+        id: 4,
+        url: "https://i.ytimg.com/vi/l4UBqr3Z6r8/maxresdefault.jpg",
+        caption: "Switzerland Trip!",
+        tags: ["Switzerland","Summer 2025", "Photography", "Family Travel"],
+    },
+    {
+        id: 5,
+        url: "https://cdn.fondecranvip.com/2025/09/heKHMOND-fond-decran-Bonhomme-de-neige-27.webp",
+        caption: "Christmas Holidays - First Snow",
+        tags: ["Merry Christmas", "Winter Time", "Snow"],
+    },
+    {
+        id: 6,
+        url: "https://wallpaper.forfun.com/fetch/7a/7a3bbab6fd3f4ec1f68b1fa5678d8bb4.jpeg",
+        caption: "",
+        tags: ["Brunch with Friends", "Central Park", "Sunny Day"],
+    },
+    {
+        id: 7,
+        url: "https://images.unsplash.com/photo-1551632811-561732d1e306?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aGlraW5nfGVufDB8fDB8fHww",
+        caption: "",
+        tags: ["Hiking", "Beautiful Landscape", "Mountains"],
     },
     ];
 
@@ -178,9 +202,6 @@ interface Slide {
           <section className="slider-section">
               <ImageSlider
               photos={slides}
-              currentIndex={currentIndex}
-              onPrev={prev}
-              onNext={next}
               />
           </section>
           <br />
