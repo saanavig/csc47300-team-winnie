@@ -12,15 +12,14 @@
   background: #fff;             
 }
 
-/* --- Header --- */
+/* header */
 .profile-page .profile-header {
   display: grid;
   grid-template-columns: 1fr 150px;
   gap: 1.5rem;
   align-items: start;
   margin-bottom: 1.25rem;
-  /* border-bottom: 1px solid var(--border); */
-  /* padding-bottom: 1.25rem; */
+
   
 }
 
@@ -28,7 +27,7 @@
   position: relative;
   width: 150px;
   height: 150px;
-  justify-self: end; /* keeps avatar to the right column edge */
+  justify-self: end; 
 }
 
 .profile-page .avatar-wrap {
@@ -99,7 +98,7 @@
 
 .profile-page .bio { color: var(--text); }
 
-/* Friends */
+/* friends */
 .profile-page .friends-list {
   display: flex; gap: .5rem .75rem; flex-wrap: wrap;
   list-style: none; padding: 0; margin: .5rem 0 0 0;
@@ -110,7 +109,7 @@
   font-size: .9rem;
 }
 
-/* --- Tabs --- */
+/* tabs */
 .profile-page .tabs-bar {
   display: flex; justify-content: center; gap: 1rem;
   border-bottom: 1px solid var(--border); margin: 1rem 0 1.25rem;
@@ -126,7 +125,7 @@
   height: 2px; background: var(--text);
 }
 
-/* --- Albums --- */
+/* albums */
 .profile-page .album-meta {
   padding: 12px 14px 18px;
 }
@@ -170,7 +169,7 @@
   gap: 19px;
 }
 
-/* --- Responsive --- */
+/* responsive */
 @media (max-width: 640px) {
   .profile-page .profile-header { grid-template-columns: 1fr; gap: 1rem; }
   .profile-page .profile-avatar { width: 100px; height: 100px; justify-self: center; }
@@ -270,12 +269,10 @@
   background-color: #005fcc;
 }
 
-/* Container p around the follower link */
 .profile-page p {
   margin: 10px 0;
 }
 
-/* Make each follower row look like a clean card */
 .profile-page p .profile-link {
   display: flex;
   align-items: center;
@@ -292,7 +289,6 @@
               box-shadow 0.2s ease;
 }
 
-/* Profile picture styling */
 .profile-page p .profile-link::before {
   content: "";
   width: 32px;
@@ -302,7 +298,6 @@
   flex-shrink: 0;
 }
 
-/* Hover effect */
 .profile-page p .profile-link:hover {
   background: #f9fafb;
   transform: translateY(-2px);
@@ -320,3 +315,43 @@
   opacity: 0.8;
 }
 
+.follower-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fefdfbd0;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.follower-item:hover {
+  background: #f9fafb;
+  transform: translateY(-2px);
+}
+
+.follower-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.follower-item span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.follower-item .arrow {
+  margin-left: auto;
+  color: #6b7280;
+}
+.follower-item .arrow:hover {
+  color: #111827;
+}
