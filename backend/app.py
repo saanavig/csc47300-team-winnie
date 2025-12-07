@@ -674,13 +674,31 @@ def join_album(album_id):
     if current_user in album.get("collaborators", []):
         return jsonify({"message": "Already joined", "joined": True}), 200
 
-    # Add current user as collaborator
+    # Add current user as collaborator in owner's album
     users_collection.update_one(
         {"albums.id": album_id},
         {"$push": {"albums.$.collaborators": current_user}}
     )
 
+    # Add album reference to current user's albums as 'shared'
+    shared_album = {
+        "id": album["id"],
+        "title": album["title"],
+        "photos": album.get("photos", []),
+        "createdAt": album.get("createdAt"),
+        "coverUrl": album.get("coverUrl"),
+        "owner": album["owner"],
+        "collaborators": album.get("collaborators", []) + [current_user],
+        "privacy": "shared"
+    }
+
+    users_collection.update_one(
+        {"username": current_user},
+        {"$push": {"albums": shared_album}}
+    )
+
     return jsonify({"message": "Joined album successfully!", "joined": True}), 200
+
 
 def get_user_avatar(username):
     user = db.users.find_one({"username": username})
