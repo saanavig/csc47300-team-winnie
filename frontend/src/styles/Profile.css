@@ -269,3 +269,54 @@
 .edit-profile-btn:hover {
   background-color: #005fcc;
 }
+
+/* Container p around the follower link */
+.profile-page p {
+  margin: 10px 0;
+}
+
+/* Make each follower row look like a clean card */
+.profile-page p .profile-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, 
+              transform 0.15s ease, 
+              box-shadow 0.2s ease;
+}
+
+/* Profile picture styling */
+.profile-page p .profile-link::before {
+  content: "";
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* Hover effect */
+.profile-page p .profile-link:hover {
+  background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.profile-page p .profile-link::after {
+  content: "→";
+  margin-left: auto;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.profile-page p .profile-link:hover::after {
+  opacity: 0.8;
+}
+
