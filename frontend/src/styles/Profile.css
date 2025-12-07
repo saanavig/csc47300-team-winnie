@@ -222,34 +222,52 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   margin-bottom: 10px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-page .friend-request-item:hover {
+  background: #f9fafb;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .profile-page .friend-request-item span {
-  margin-right: 12px;
+  flex: 1;
   font-weight: 600;
+  color: var(--text);
 }
 
 .profile-page .friend-request-item button {
   background-color: var(--accent);
   color: #ffffff;
   border: 1px solid var(--accent);
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-left: 4px;
-}
-
-.profile-page .friend-request-item button:first-child {
-  margin-left: 0;
+  white-space: nowrap;
 }
 
 .profile-page .friend-request-item button:hover {
-  background-color: #2563eb;
+  background-color: #005fcc;
   transform: translateY(-2px);
+}
+
+.profile-page .friend-request-item button:last-child {
+  background-color: #f3f4f6;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.profile-page .friend-request-item button:last-child:hover {
+  background-color: #e5e7eb;
 }
 
 .edit-profile-btn {
