@@ -155,23 +155,43 @@ def edit_profile():
         updates["bio"] = bio
 
     if avatar_file:
-        filename = secure_filename(avatar_file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-
-        if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-            os.makedirs(app.config["UPLOAD_FOLDER"])
-
-        avatar_file.save(filepath)
-        updates["avatarUrl"] = f"/uploads/{filename}"
+        try:
+            # Upload avatar directly to Cloudinary and store secure url
+            # use a user-specific public_id to avoid collisions
+            public_id = f"avatars/{current_user}_{uuid.uuid4().hex}"
+            upload_opts = {"public_id": public_id, "overwrite": True}
+            result = cloudinary.uploader.upload(avatar_file, **upload_opts)
+            secure_url = result.get("secure_url")
+            if secure_url:
+                updates["avatarUrl"] = secure_url
+            else:
+                # fallback to saving locally if cloudinary failed
+                filename = secure_filename(avatar_file.filename)
+                filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+                    os.makedirs(app.config["UPLOAD_FOLDER"])
+                avatar_file.save(filepath)
+                updates["avatarUrl"] = f"/uploads/{filename}"
+        except Exception as e:
+            print("⚠️ Cloudinary upload failed, falling back to local save:", e)
+            filename = secure_filename(avatar_file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+                os.makedirs(app.config["UPLOAD_FOLDER"])
+            avatar_file.save(filepath)
+            updates["avatarUrl"] = f"/uploads/{filename}"
 
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
     users_collection.update_one({"username": current_user}, {"$set": updates})
-    return jsonify({
-        "message": "Profile updated successfully!",
-        "avatarUrl": updates.get("avatarUrl")
-    }), 200
+    # return the new avatarUrl and updated bio if present
+    response_obj = {"message": "Profile updated successfully!"}
+    if "avatarUrl" in updates:
+        response_obj["avatarUrl"] = updates.get("avatarUrl")
+    if "bio" in updates:
+        response_obj["bio"] = updates.get("bio")
+    return jsonify(response_obj), 200
 
 # serve uploaded files
 @app.route("/uploads/<path:filename>")
