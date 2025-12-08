@@ -172,17 +172,39 @@ export default function Albums() {
     );
   };
 
+  const token = localStorage.getItem('token');
+
   return (
     <div className="albums-page">
-      <header className="albums-header">
-        <h1>My Albums</h1>
-        <button className="create-album-btn primary" onClick={() => setShowCreateModal(true)}>+ Create New Album</button>
-      </header>
+      {!token ? (
+        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+          <h1 style={{ marginBottom: '20px' }}>My Albums</h1>
+          <p style={{ fontSize: '18px', color: '#666', marginBottom: '30px' }}>Please log in to view your albums</p>
+          <a href="/login" style={{ 
+            display: 'inline-block',
+            padding: '12px 30px',
+            backgroundColor: '#5858d8',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '16px'
+          }}>
+            Go to Login
+          </a>
+        </div>
+      ) : (
+        <>
+          <header className="albums-header">
+            <h1>My Albums</h1>
+            <button className="create-album-btn primary" onClick={() => setShowCreateModal(true)}>+ Create New Album</button>
+          </header>
 
-      {renderCategory('private', 'Private Albums', 'No private albums yet. Create an album to start storing your personal memories!')}
-      {renderCategory('shared', 'Shared Albums', 'No shared albums yet. Create a shared album to collaborate with friends and family!')}
-      {renderCategory('public', 'Public Albums', 'No public albums yet. Create a public album to share your memories with everyone!')}
-
+          {renderCategory('private', 'Private Albums', 'No private albums yet. Create an album to start storing your personal memories!')}
+          {renderCategory('shared', 'Shared Albums', 'No shared albums yet. Create a shared album to collaborate with friends and family!')}
+          {renderCategory('public', 'Public Albums', 'No public albums yet. Create a public album to share your memories with everyone!')}
+        </>
+      )}
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>

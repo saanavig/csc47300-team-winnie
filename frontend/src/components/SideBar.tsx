@@ -6,8 +6,8 @@ import '../styles/Sidebar.css';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/photo-management', label: 'Photos', icon: Image },
   { path: '/admin/album-management', label: 'Albums', icon: FolderOpen },
+  //{ path: '/admin/photo-management', label: 'Photos', icon: Image },
   { path: '/admin/user-management', label: 'Users', icon: Users },
 ];
 
