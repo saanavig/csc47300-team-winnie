@@ -51,7 +51,7 @@ export default function ProfilePage() {
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
   const [notification, setNotification] = useState<string | null>(null);
-
+  const [notifMessage, setNotifMessage] = useState<string | null>(null);
 
   /** Fetch profile */
   useEffect(() => {
@@ -356,6 +356,7 @@ export default function ProfilePage() {
                 username={req}
                 token={token}
                 onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
+                setNotifMessage={setNotifMessage}
               />
             ))
           ) : null}
@@ -495,7 +496,18 @@ function AddFriendPopup({ onAdd }: { onAdd: (username: string) => Promise<string
 }
 
 /** Friend Request Item */
-function FriendRequestItem({ username, token, onRemove }: { username: string; token: string | null; onRemove: () => void }) {
+function FriendRequestItem({
+  username,
+  token,
+  onRemove,
+  setNotifMessage
+}: {
+  username: string;
+  token: string | null;
+  onRemove: () => void;
+  setNotifMessage: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
+
   const handleResponse = async (action: string) => {
     try {
       const res = await fetch("http://127.0.0.1:5000/friends/respond", {
@@ -504,9 +516,21 @@ function FriendRequestItem({ username, token, onRemove }: { username: string; to
         body: JSON.stringify({ username, action }),
       });
       const result = await res.json();
-      alert(result.message || result.error);
-      onRemove();
-    } catch { alert("❌ Network error."); }
+
+      if (res.ok) {
+        // Show message in notifications popup
+        setNotifMessage(result.message || "Action successful!");
+        setTimeout(() => setNotifMessage(null), 2000); // auto-hide after 2s
+        onRemove();
+      } else {
+        setNotifMessage(result.error || "Something went wrong");
+        setTimeout(() => setNotifMessage(null), 2000);
+      }
+
+    } catch {
+      setNotifMessage("❌ Network error");
+      setTimeout(() => setNotifMessage(null), 2000);
+    }
   };
 
   return (
