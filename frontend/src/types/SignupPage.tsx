@@ -9,12 +9,14 @@ export default function SignupPage() {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
+    const [success, setSuccess] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError("");
+        setSuccess("");
         setLoading(true);
 
         try {
@@ -29,7 +31,8 @@ export default function SignupPage() {
         const data = await response.json();
 
         if (response.ok) {
-            alert("Signup successful!");
+            setSuccess("Signup successful! 🎉");
+            setTimeout(() => navigate("/login"), 1500);
             navigate("/login");
         } else {
             setError(data.error || "Signup failed");
@@ -88,7 +91,10 @@ export default function SignupPage() {
                 />
             </div>
 
-            {error && <p className="error-text">{error}</p>}
+            {/* {error && <p className="error-text">{error}</p>} */}
+            {error && <p className="form-message error-message"><b>{error}</b></p>}
+            {success && <p className="form-message success-message"><b>{success}</b></p>}
+
 
             <button type="submit" disabled={loading}>
                 {loading ? "Signing up..." : "Sign Up"}

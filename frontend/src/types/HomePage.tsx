@@ -91,7 +91,7 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="hero-subtitle">
-            Welcome to Winnie Memory Archive! Capture, organize, and revisit the moments that matter. Keep full control with album privacy, 
+            Welcome to <strong>Winnie Memory Archive</strong>! Capture, organize, and revisit the moments that matter. Keep full control with album privacy, 
             smart tags, and shareable groups so your memories look great and stay yours.
           </p>
 
