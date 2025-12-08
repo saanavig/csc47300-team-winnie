@@ -74,7 +74,6 @@ export function RecentActivity() {
         <h3 className="table-header__title">Recent Activity</h3>
         <div className="table-header__actions">
           <Link to="/admin/album-management" className="btn btn--ghost btn--sm">Manage Albums</Link>
-          <Link to="/admin/photo-management" className="btn btn--ghost btn--sm">Manage Photos</Link>
         </div>
       </div>
       {error && <p style={{ color: 'red', padding: '10px' }}>{error}</p>}
