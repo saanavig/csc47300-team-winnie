@@ -22,6 +22,7 @@ const Explore: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [joiningId, setJoiningId] = useState<string | null>(null);
 
+
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username"); // current logged-in user
     const [notification, setNotification] = useState<string | null>(null);
@@ -61,7 +62,7 @@ const Explore: React.FC = () => {
   // Join an album
     const joinAlbum = async (albumId: string | null) => {
     if (!token || !username) {
-        alert("You must be logged in to join an album.");
+        setNotification("You must be logged in to join an album.");
         return;
     }
     if (!albumId) return;
@@ -210,7 +211,7 @@ const Explore: React.FC = () => {
             ))}
         </div>
         {notification && (
-            <PopupModal title="Success" onClose={() => setNotification(null)}>
+            <PopupModal title="Notice:" onClose={() => setNotification(null)}>
                 <p>{notification}</p>
             </PopupModal>
         )}
