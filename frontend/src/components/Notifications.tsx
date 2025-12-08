@@ -124,8 +124,8 @@ const Notifications: React.FC<NotificationsProps> = ({
                         <div key={invite.album_id} className="notification-item">
                             <span>
                                 <p>
-                                    {invite.inviter} has invited you to "
-                                    {invite.album_title}"
+                                    {invite.inviter} has invited you to
+                                    {invite.album_title}
                                 </p>
                                 <strong>{invite.title || invite.album_id}</strong>
                             </span>
