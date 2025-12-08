@@ -217,7 +217,8 @@ export default function ProfilePage() {
         return;
       }
 
-      alert(result.message);
+      setNotification(result.message);
+
 
       // Remove invite from notifications UI
       setAlbumInvites((prev) => prev.filter((inv) => inv.album_id !== albumId));
@@ -434,7 +435,7 @@ export default function ProfilePage() {
       )}
 
       {notification && (
-        <PopupModal title="Success" onClose={() => setNotification(null)}>
+        <PopupModal title="Album Update:" onClose={() => setNotification(null)}>
           <p>{notification}</p>
         </PopupModal>
       )}

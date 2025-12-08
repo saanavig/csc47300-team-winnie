@@ -21,6 +21,7 @@ interface NotificationsProps {
     onJoinAlbum: (album: any) => void;
 }
 
+
 const Notifications: React.FC<NotificationsProps> = ({
     token,
     friendRequests,
@@ -29,6 +30,16 @@ const Notifications: React.FC<NotificationsProps> = ({
     setAlbumInvites,
     onJoinAlbum,
 }) => {
+
+    const [tempMessage, setTempMessage] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (tempMessage) {
+            const timer = setTimeout(() => setTempMessage(null), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [tempMessage]);
+    
     console.log("Current albumInvites:", albumInvites);
 
     const handleAcceptInvite = async (albumId: string | undefined) => {
@@ -48,11 +59,11 @@ const Notifications: React.FC<NotificationsProps> = ({
             const json = await res.json();
             
             if (res.ok) {
-                alert(json.message || "Invite accepted!");
+                setTempMessage(json.message || "Invite accepted!");
                 setAlbumInvites(albumInvites.filter((i) => i.album_id !== albumId));
                 if (json.album) onJoinAlbum(json.album);
             } else {
-                alert(json.error || "Failed to accept invite");
+                setTempMessage(json.message || "Failed to accept invite!");
             }
         } catch (err) {
             console.error(err);
@@ -75,10 +86,10 @@ const Notifications: React.FC<NotificationsProps> = ({
             const json = await res.json();
             
             if (res.ok) {
-                alert(json.message || "Invite declined");
+                setTempMessage(json.message || "Invite declined!");
                 setAlbumInvites(albumInvites.filter((i) => i.album_id !== albumId));
             } else {
-                alert(json.error || "Failed to decline invite");
+                setTempMessage(json.message || "Failed to Decline Invite!");
             }
         } catch (err) {
             console.error(err);
@@ -146,6 +157,14 @@ const Notifications: React.FC<NotificationsProps> = ({
                 : null}
 
             {!friendRequests.length && !albumInvites.length && <p>No new notifications</p>}
+            {tempMessage && (
+                <div className="temp-modal-backdrop">
+                    <div className="temp-modal">
+                        {tempMessage}
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
