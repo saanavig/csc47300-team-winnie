@@ -90,7 +90,8 @@ def signup():
         "following": [],
         "friendRequests": {"incoming": [], "outgoing": []},
         "friends": [],
-        "albums": []
+        "albums": [],
+        "role": "user"
     })
 
     return jsonify({"message": "Signup successful!"}), 201
@@ -119,7 +120,10 @@ def login():
     if not user or not check_password_hash(user["password"], password):
         return jsonify({"error": "Invalid email/username or password"}), 401
 
-    access_token = create_access_token(identity=user["username"])
+    access_token = create_access_token(
+        identity=user["username"],
+        additional_claims={"role": user.get("role", "user")}
+    )
 
     return jsonify({
         "message": "Login successful!",
@@ -155,23 +159,43 @@ def edit_profile():
         updates["bio"] = bio
 
     if avatar_file:
-        filename = secure_filename(avatar_file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-
-        if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-            os.makedirs(app.config["UPLOAD_FOLDER"])
-
-        avatar_file.save(filepath)
-        updates["avatarUrl"] = f"/uploads/{filename}"
+        try:
+            # Upload avatar directly to Cloudinary and store secure url
+            # use a user-specific public_id to avoid collisions
+            public_id = f"avatars/{current_user}_{uuid.uuid4().hex}"
+            upload_opts = {"public_id": public_id, "overwrite": True}
+            result = cloudinary.uploader.upload(avatar_file, **upload_opts)
+            secure_url = result.get("secure_url")
+            if secure_url:
+                updates["avatarUrl"] = secure_url
+            else:
+                # fallback to saving locally if cloudinary failed
+                filename = secure_filename(avatar_file.filename)
+                filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+                    os.makedirs(app.config["UPLOAD_FOLDER"])
+                avatar_file.save(filepath)
+                updates["avatarUrl"] = f"/uploads/{filename}"
+        except Exception as e:
+            print("⚠️ Cloudinary upload failed, falling back to local save:", e)
+            filename = secure_filename(avatar_file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+                os.makedirs(app.config["UPLOAD_FOLDER"])
+            avatar_file.save(filepath)
+            updates["avatarUrl"] = f"/uploads/{filename}"
 
     if not updates:
         return jsonify({"error": "No updates provided"}), 400
 
     users_collection.update_one({"username": current_user}, {"$set": updates})
-    return jsonify({
-        "message": "Profile updated successfully!",
-        "avatarUrl": updates.get("avatarUrl")
-    }), 200
+    # return the new avatarUrl and updated bio if present
+    response_obj = {"message": "Profile updated successfully!"}
+    if "avatarUrl" in updates:
+        response_obj["avatarUrl"] = updates.get("avatarUrl")
+    if "bio" in updates:
+        response_obj["bio"] = updates.get("bio")
+    return jsonify(response_obj), 200
 
 # serve uploaded files
 @app.route("/uploads/<path:filename>")
@@ -317,8 +341,10 @@ def create_album():
         photo_objs.append({
             "id": str(uuid.uuid4()),
             "url": url,
+            "filename": files[idx].filename if idx < len(files) else "photo.jpg",
             "tags": tags_for_all if tags_for_all else [],
-            "uploadDate": datetime.utcnow().isoformat()
+            "uploadDate": datetime.utcnow().isoformat(),
+            "uploadedBy": current_user
         })
 
     album = {
@@ -395,6 +421,34 @@ def delete_album(album_id):
     )
     return jsonify({"message": "Album deleted successfully"}), 200
 
+
+@app.route("/albums/<album_id>/archive", methods=["POST"])
+@jwt_required()
+def archive_album(album_id):
+    """Mark an album as archived/rejected so it won't appear in public/user listings."""
+    current_user = get_jwt_identity()
+
+    # Find owner of the album
+    owner_doc = users_collection.find_one({"albums.id": album_id})
+    if not owner_doc:
+        return jsonify({"error": "Album not found"}), 404
+
+    # Only allow archive if current_user is owner or has role 'admin'
+    owner_username = owner_doc.get("username")
+    requester = users_collection.find_one({"username": current_user}, {"role": 1})
+    is_admin = requester and requester.get("role") == "admin"
+
+    if current_user != owner_username and not is_admin:
+        return jsonify({"error": "Not authorized to archive this album"}), 403
+
+    # Set album status to 'rejected' (soft-archive)
+    users_collection.update_one(
+        {"albums.id": album_id},
+        {"$set": {"albums.$.status": "rejected"}}
+    )
+
+    return jsonify({"message": "Album archived (status set to rejected)"}), 200
+
 # add photos to an existing album
 @app.route("/albums/<album_id>/add-photos", methods=["POST"])
 @jwt_required()
@@ -431,8 +485,10 @@ def add_photos_to_album(album_id):
         obj = {
             "id": str(uuid.uuid4()),
             "url": url,
+            "filename": file.filename,
             "tags": tags_for_all if tags_for_all else [],
-            "uploadDate": datetime.utcnow().isoformat()
+            "uploadDate": datetime.utcnow().isoformat(),
+            "uploadedBy": current_user
         }
         uploaded_objs.append(obj)
 
@@ -610,6 +666,13 @@ def get_public_profile(username):
     if not user:
         return jsonify({"error": "User not found"}), 404
 
+    # Filter out archived/rejected albums
+    visible_albums = []
+    for album in user.get("albums", []):
+        if album.get("status") == "rejected":
+            continue
+        visible_albums.append(album)
+
     return jsonify({
         "name": user.get("name"),
         "username": user.get("username"),
@@ -617,7 +680,7 @@ def get_public_profile(username):
         "avatar": user.get("avatarUrl"),
         "followers": len(user.get("followers", [])),
         "following": len(user.get("following", [])),
-        "albums": user.get("albums", [])
+        "albums": visible_albums
     })
 
 @app.route("/users", methods=["GET"])
@@ -638,17 +701,21 @@ def list_public_albums():
         except:
             pass
 
-        users = users_collection.find({}, {"_id": 0, "albums": 1, "username":1})
+        users = users_collection.find({}, {"_id": 0, "albums": 1, "username": 1, "avatarUrl": 1})
         public_albums = []
 
         for user in users:
             for album in user.get("albums", []):
+                # skip archived/rejected albums
+                if album.get("status") == "rejected":
+                    continue
                 if album.get("privacy", "public") == "public":
                     public_albums.append({
                         "id": album["id"],
                         "title": album["title"],
                         "img": album.get("coverUrl", ""),
                         "owner": user["username"],
+                        "ownerAvatar": user.get("avatarUrl", ""),
                         "joined": current_user in album.get("collaborators", []) if current_user else False
                     })
 
@@ -672,9 +739,11 @@ def list_user_albums():
     if not user or "albums" not in user:
         return jsonify({"albums": []}), 200
 
-    # Format albums
+    # Format albums (exclude archived)
     user_albums = []
     for album in user["albums"]:
+        if album.get("status") == "rejected":
+            continue
         user_albums.append({
             "id": album.get("id"),
             "title": album.get("title"),
@@ -827,6 +896,146 @@ def respond_to_album_invite(album_id):
 
     else:
         return jsonify({"error": "Invalid action"}), 400
+
+# Admin dashboard - get recent albums
+@app.route("/admin/albums", methods=["GET"])
+def get_admin_albums():
+    """Fetch the 10 most recent albums from all users"""
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        
+        # get all users with their albums
+        users = list(users_collection.find({}, {"_id": 0, "username": 1, "albums": 1}))
+        
+        all_albums = []
+        for user in users:
+            username = user.get("username", "")
+            for album in user.get("albums", []):
+                # skip archived/rejected albums
+                if album.get("status") == "rejected":
+                    continue
+                created_at = album.get("createdAt")
+                # Convert datetime to ISO format string if it's a datetime object
+                if isinstance(created_at, datetime):
+                    created_at = created_at.isoformat()
+                
+                all_albums.append({
+                    "id": album.get("id"),
+                    "name": album.get("title"),
+                    "photoCount": len(album.get("photos", [])),
+                    "privacy": album.get("privacy", "public"),
+                    "date": created_at,
+                    "owner": album.get("owner", username),
+                    "coverUrl": album.get("coverUrl")
+                })
+        
+        all_albums.sort(key=lambda x: x.get("date") or "", reverse=True)
+        
+        return jsonify({"albums": all_albums[:limit]}), 200
+    except Exception as e:
+        print("❌ Error in /admin/albums:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error", "albums": []}), 500
+
+# Admin dashboard - get recent photos
+@app.route("/admin/recent-photos", methods=["GET"])
+def get_recent_photos():
+    """Fetch the 10 most recent photos from all users' albums"""
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        
+        # get all users with their albums
+        users = list(users_collection.find({}, {"_id": 0, "username": 1, "albums": 1}))
+        
+        all_photos = []
+        for user in users:
+            username = user.get("username", "")
+            for album in user.get("albums", []):
+                for photo in album.get("photos", []):
+                    # Handle both old format (string URL) and new format (dict)
+                    if isinstance(photo, str):
+                        # Old format: photo is just a URL string
+                        all_photos.append({
+                            "id": "",
+                            "thumbnail": photo,
+                            "file": "photo.jpg",
+                            "uploadDate": "",
+                            "user": username,
+                            "albumId": album.get("id"),
+                            "albumTitle": album.get("title")
+                        })
+                    else:
+                        # New format: photo is a dict with metadata
+                        # Use uploadedBy if available, otherwise fall back to album owner
+                        uploader = photo.get("uploadedBy", username)
+                        all_photos.append({
+                            "id": photo.get("id"),
+                            "thumbnail": photo.get("url"),
+                            "file": photo.get("filename", "photo.jpg"),
+                            "uploadDate": photo.get("uploadDate"),
+                            "user": uploader,
+                            "albumId": album.get("id"),
+                            "albumTitle": album.get("title")
+                        })
+        
+        all_photos.sort(key=lambda x: x.get("uploadDate") or "", reverse=True)
+        
+        return jsonify({"photos": all_photos[:limit]}), 200
+    except Exception as e:
+        print("❌ Error in /admin/recent-photos:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error", "photos": []}), 500
+
+# Admin dashboard - get statistics
+@app.route("/admin/stats", methods=["GET"])
+def get_dashboard_stats():
+    """Get dashboard statistics: total photos, albums, public/private counts"""
+    try:
+        users = list(users_collection.find({}, {"_id": 0, "albums": 1}))
+        
+        total_photos = 0
+        total_albums = 0
+        public_count = 0
+        private_count = 0
+        
+        for user in users:
+            albums = user.get("albums", [])
+            total_albums += len(albums)
+            
+            for album in albums:
+                photos = album.get("photos", [])
+                photo_count = len(photos)
+                total_photos += photo_count
+                
+                # Count by album privacy
+                privacy = album.get("privacy", "public")
+                
+                if privacy == "private":
+                    private_count += photo_count
+                else:  # public or shared
+                    public_count += photo_count
+        
+        print(f"📊 Dashboard stats - Photos: {total_photos}, Albums: {total_albums}, Public: {public_count}, Private: {private_count}")
+        
+        return jsonify({
+            "totalPhotos": total_photos,
+            "totalAlbums": total_albums,
+            "publicCount": public_count,
+            "privateCount": private_count
+        }), 200
+    except Exception as e:
+        print("❌ Error in /admin/stats:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "totalPhotos": 0,
+            "totalAlbums": 0,
+            "publicCount": 0,
+            "privateCount": 0,
+            "error": "Internal server error"
+        }), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)

@@ -9,22 +9,26 @@ interface DecodedToken {
         name?: string;
     };
     exp?: number;
+    role?: string;
     }
 
     interface AuthContextType {
     username: string | null;
     setUsername: (name: string | null) => void;
     logout: () => void;
+    isAdmin: boolean;
     }
 
     const AuthContext = createContext<AuthContextType>({
     username: null,
     setUsername: () => {},
     logout: () => {},
+    isAdmin: false,
     });
 
     export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [username, setUsername] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -34,6 +38,7 @@ interface DecodedToken {
             if (decoded.sub?.name || decoded.sub?.username) {
             setUsername(decoded.sub.name || decoded.sub.username || null);
             }
+            setIsAdmin(decoded.role === "admin");
         } catch {
             console.warn("Invalid token");
         }
@@ -43,10 +48,11 @@ interface DecodedToken {
     const logout = () => {
         localStorage.removeItem("token");
         setUsername(null);
+        setIsAdmin(false);
     };
 
     return (
-        <AuthContext.Provider value={{ username, setUsername, logout }}>
+        <AuthContext.Provider value={{ username, setUsername, logout, isAdmin }}>
         {children}
         </AuthContext.Provider>
     );

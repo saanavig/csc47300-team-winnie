@@ -10,6 +10,7 @@ interface Album {
     title: string;
     img: string;
     owner: string;
+    ownerAvatar?: string;
     privacy?: "public" | "private" | "shared";
     joined?: boolean; // tracks if user has joined
 }
@@ -172,13 +173,25 @@ const Explore: React.FC = () => {
                 <div className="card-body">
                 <h2>{a.title}</h2>
                 <div className="avatars">
-                    <div className="avatar">
-                    <img
+                    <div 
+                        className="avatar" 
+                        title={a.owner}
+                        onClick={() => navigate(`/users/${a.owner}`)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                    {a.ownerAvatar ? (
+                        <img
+                        src={a.ownerAvatar}
+                        alt={a.owner}
+                        />
+                    ) : (
+                        <img
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        a.owner
+                            a.owner
                         )}`}
                         alt={a.owner}
-                    />
+                        />
+                    )}
                     </div>
                 </div>
                 <button
