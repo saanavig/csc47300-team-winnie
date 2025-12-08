@@ -259,3 +259,122 @@ p {
   line-height: 1.7;
   margin: 12px 0;
 }
+
+/* New CSS */
+
+.hero-full {
+    width: 100%;
+    min-height: 20px;
+
+    border-radius: 0;
+    margin: 0;
+    padding: 30px 24px;
+
+    /* Make gradient stretch across entire page */
+    background: #f7f3f4;
+}
+
+
+.hero {
+    text-align: center;
+    
+}
+
+/* Small rounded badge */
+.hero-badge {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #fde7df;
+    color: #d26b5c;
+    font-size: 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    backdrop-filter: blur(4px);
+}
+
+/* Main title */
+.hero-title {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #2a1e18;
+    margin: 0 0 24px;
+    letter-spacing: -0.02em;
+}
+
+/* Pink part */
+.hero-title span {
+    display: block;
+    color: #de7c7b;
+    font-weight: 700;
+}
+
+/* Subtitle */
+.hero-subtitle {
+    font-size: 20px;
+    color: #6b584f;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+    padding-bottom: 55px;
+}
+
+
+.hero-welcome {
+  margin-top: 40px;
+  text-align: center;
+  max-width: 750px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.9;
+}
+
+.hero-welcome h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.hero-welcome p {
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Explore Now Button */
+.hero-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: -50px;
+  margin-bottom: 40px; 
+}
+
+.cta-btn {
+  padding: 16px 34px;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #f7b7a3 0%, #e88983 100%);
+  color: #fff;
+
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.15);
+  color: black;
+}
+
+.cta-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
