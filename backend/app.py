@@ -832,7 +832,7 @@ def get_album_invites():
         album = db.albums.find_one({"_id": inv["album_id"]})
         formatted.append({
             "album_id": inv["album_id"],
-            "album_title": album.get("title") if album else "Unknown Album",
+            "album_title": album.get("title") if album else inv.get("album_title"),
             "inviter": inv.get("inviter")
         })
 

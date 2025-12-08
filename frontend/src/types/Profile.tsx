@@ -433,32 +433,31 @@ export default function ProfilePage() {
       {/* Albums */}
       <div className="tabs-bar"><button className="tab active">My Albums</button></div>
       <section className="profile-albums">
-        <div className="albums-grid">
-          {[...albums]
-            .reverse()
-            .map((album, idx) => {
-            const popupId = `menu-${album.id}`;
-            const inviteId = `invite-${album.id}`;
-            return (
-              <article key={album.id || idx} className="album-card" onClick={() => handleAlbumClick(album.id!)}>
-                <div className="album-media">
-                  <img src={album.cover} alt={album.title} />
-                  <button
-                    className="album-menu-btn"
-                    onClick={(e) => { e.stopPropagation(); setShowPopup(popupId); }}
-                  >⋮</button>
-                  {showPopup === popupId && (
-                    <div className="album-menu-dropdown" onClick={(e) => e.stopPropagation()}>
-                      <button className="dropdown-item" onClick={() => setShowPopup(inviteId)}>Invite Friends</button>
-                      <button className="dropdown-item delete" onClick={() => alert("Delete album coming soon")}>Delete Album</button>
-                    </div>
+      <div className="albums-grid">
+        {[...albums].reverse().map((album, idx) => {
+          const popupId = `menu-${album.id}`;
+          const inviteId = `invite-${album.id}`;
+          return (
+            <article key={album.id || idx} className="album-card" onClick={() => handleAlbumClick(album.id!)}>
+              <div className="album-media">
+                <img src={album.cover} alt={album.title} />
+                <button
+                  className="album-menu-btn"
+                  onClick={(e) => { e.stopPropagation(); setShowPopup(popupId); }}
+                >⋮</button>
+                {showPopup === popupId && (
+                  <div className="album-menu-dropdown" onClick={(e) => e.stopPropagation()}>
+                    <button className="dropdown-item" onClick={() => setShowPopup(inviteId)}>Invite Friends</button>
+                    <button className="dropdown-item delete" onClick={() => alert("Delete album coming soon")}>Delete Album</button>
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+
 
       {albums.map((album) => {
         const inviteId = `invite-${album.id}`;
