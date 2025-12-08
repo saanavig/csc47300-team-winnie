@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
-  const [friendRequests, setFriendRequests] = useState<{ username: string }[]>([]);
+  const [friendRequests, setFriendRequests] = useState<string[]>([]);
   const [albumInvites, setAlbumInvites] = useState<
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
@@ -139,45 +139,22 @@ export default function ProfilePage() {
     if (showPopup) fetchFriendData();
   }, [showPopup]);
 
-  /** Fetch notifications (album invites and friend requests) */
+  /** Fetch album invites whenever notifications popup opens */
   useEffect(() => {
-    if (!token) return;
-
-    const fetchNotifications = async () => {
+    if (!token || showPopup !== "notifications") return;
+    const fetchAlbumInvites = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/notifications", {
+        const res = await fetch("http://127.0.0.1:5000/albums/invites", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();
-        if (res.ok && json.notifications) {
-          const notifications = json.notifications || [];
-
-          // Extract album invites
-          const invites = notifications
-            .filter((n: any) => n.type === "album_invite")
-            .map((n: any) => ({
-              album_id: n.album_id,
-              album_title: n.albumTitle || "Unknown Album",
-              inviter: n.inviter,
-              // title: n.album_title,
-            }));
-          setAlbumInvites(invites);
-
-          // Extract friend requests (if they are in notifications)
-          const friends = notifications
-            .filter((n: any) => n.type === "friend_request")
-            .map((n: any) => ({ username: n.from }));
-          setFriendRequests(friends);
-        }
+        if (res.ok) setAlbumInvites(json.invites || []);
       } catch (err) {
-        console.error("Failed to fetch notifications:", err);
+        console.error("Failed to fetch album invites:", err);
       }
     };
-
-    fetchNotifications();
-  }, [token]);
-
-
+    fetchAlbumInvites();
+  }, [token, showPopup]);
   // auto-hides notif after 1.5 seconds
   useEffect(() => {
     if (!notification) return;
@@ -319,16 +296,29 @@ export default function ProfilePage() {
 
       {showPopup === "notifications" && (
         <PopupModal title="Notifications" onClose={() => setShowPopup(null)}>
-          <Notifications
-            token={token}
-            friendRequests={friendRequests}   // pass as-is, no mapping
-            setFriendRequests={setFriendRequests}
-            albumInvites={albumInvites}
-            setAlbumInvites={setAlbumInvites}
-            onJoinAlbum={(album) => setAlbums(prev => [...prev, album])}
-          />
+          {/* Friend Requests */}
+          {friendRequests.length ? (
+            friendRequests.map((req: string) => (
+              <FriendRequestItem
+                key={req}
+                username={req}
+                token={token}
+                onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
+              />
+            ))
+          ) : null}
+          {/* Album Invites */}
+          {albumInvites.length ? (
+            albumInvites.map(invite => (
+              <div key={invite.album_id} className="notification-item">
+                {invite.inviter} invited you to collaborate on "{invite.album_title}"
+                <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>Accept</button>
+                <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
+              </div>
+            ))
+          ) : null}
         </PopupModal>
-    )}
+      )}
 
       {showPopup === "followers" && (
         <PopupModal title="Followers" onClose={() => setShowPopup(null)}>
