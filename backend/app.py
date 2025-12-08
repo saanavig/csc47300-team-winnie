@@ -337,8 +337,10 @@ def create_album():
         photo_objs.append({
             "id": str(uuid.uuid4()),
             "url": url,
+            "filename": files[idx].filename if idx < len(files) else "photo.jpg",
             "tags": tags_for_all if tags_for_all else [],
-            "uploadDate": datetime.utcnow().isoformat()
+            "uploadDate": datetime.utcnow().isoformat(),
+            "uploadedBy": current_user
         })
 
     album = {
@@ -451,8 +453,10 @@ def add_photos_to_album(album_id):
         obj = {
             "id": str(uuid.uuid4()),
             "url": url,
+            "filename": file.filename,
             "tags": tags_for_all if tags_for_all else [],
-            "uploadDate": datetime.utcnow().isoformat()
+            "uploadDate": datetime.utcnow().isoformat(),
+            "uploadedBy": current_user
         }
         uploaded_objs.append(obj)
 
@@ -828,6 +832,108 @@ def respond_to_album_invite(album_id):
 
     else:
         return jsonify({"error": "Invalid action"}), 400
+
+# Admin dashboard - get recent photos
+@app.route("/admin/recent-photos", methods=["GET"])
+def get_recent_photos():
+    """Fetch the 10 most recent photos from all users' albums"""
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        
+        # Fetch all users with their albums
+        users = list(users_collection.find({}, {"_id": 0, "username": 1, "albums": 1}))
+        
+        all_photos = []
+        for user in users:
+            username = user.get("username", "")
+            for album in user.get("albums", []):
+                for photo in album.get("photos", []):
+                    # Handle both old format (string URL) and new format (dict)
+                    if isinstance(photo, str):
+                        # Old format: photo is just a URL string
+                        all_photos.append({
+                            "id": "",
+                            "thumbnail": photo,
+                            "file": "photo.jpg",
+                            "uploadDate": "",
+                            "user": username,
+                            "albumId": album.get("id"),
+                            "albumTitle": album.get("title")
+                        })
+                    else:
+                        # New format: photo is a dict with metadata
+                        # Use uploadedBy if available, otherwise fall back to album owner
+                        uploader = photo.get("uploadedBy", username)
+                        all_photos.append({
+                            "id": photo.get("id"),
+                            "thumbnail": photo.get("url"),
+                            "file": photo.get("filename", "photo.jpg"),
+                            "uploadDate": photo.get("uploadDate"),
+                            "user": uploader,
+                            "albumId": album.get("id"),
+                            "albumTitle": album.get("title")
+                        })
+        
+        # Sort by uploadDate descending (most recent first)
+        # Handle empty/missing uploadDate values
+        all_photos.sort(key=lambda x: x.get("uploadDate") or "", reverse=True)
+        
+        # Return only the most recent 'limit' photos
+        return jsonify({"photos": all_photos[:limit]}), 200
+    except Exception as e:
+        print("❌ Error in /admin/recent-photos:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error", "photos": []}), 500
+
+# Admin dashboard - get statistics
+@app.route("/admin/stats", methods=["GET"])
+def get_dashboard_stats():
+    """Get dashboard statistics: total photos, albums, public/private counts"""
+    try:
+        users = list(users_collection.find({}, {"_id": 0, "albums": 1}))
+        
+        total_photos = 0
+        total_albums = 0
+        public_count = 0
+        private_count = 0
+        
+        for user in users:
+            albums = user.get("albums", [])
+            total_albums += len(albums)
+            
+            for album in albums:
+                photos = album.get("photos", [])
+                photo_count = len(photos)
+                total_photos += photo_count
+                
+                # Count by album privacy
+                privacy = album.get("privacy", "public")
+                
+                if privacy == "private":
+                    private_count += photo_count
+                else:  # public or shared
+                    public_count += photo_count
+        
+        print(f"📊 Dashboard stats - Photos: {total_photos}, Albums: {total_albums}, Public: {public_count}, Private: {private_count}")
+        
+        return jsonify({
+            "totalPhotos": total_photos,
+            "totalAlbums": total_albums,
+            "publicCount": public_count,
+            "privateCount": private_count
+        }), 200
+    except Exception as e:
+        print("❌ Error in /admin/stats:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "totalPhotos": 0,
+            "totalAlbums": 0,
+            "publicCount": 0,
+            "privateCount": 0,
+            "error": "Internal server error"
+        }), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
