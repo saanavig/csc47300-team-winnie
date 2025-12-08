@@ -1,8 +1,8 @@
 import "../styles/HomePage.css";
 
 import ImageSlider from "../components/ImageSlider";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 interface Slide {
     id: number;
