@@ -90,7 +90,8 @@ def signup():
         "following": [],
         "friendRequests": {"incoming": [], "outgoing": []},
         "friends": [],
-        "albums": []
+        "albums": [],
+        "role": "user"
     })
 
     return jsonify({"message": "Signup successful!"}), 201
@@ -119,7 +120,10 @@ def login():
     if not user or not check_password_hash(user["password"], password):
         return jsonify({"error": "Invalid email/username or password"}), 401
 
-    access_token = create_access_token(identity=user["username"])
+    access_token = create_access_token(
+        identity=user["username"],
+        additional_claims={"role": user.get("role", "user")}
+    )
 
     return jsonify({
         "message": "Login successful!",

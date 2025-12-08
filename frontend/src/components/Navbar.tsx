@@ -9,12 +9,14 @@ interface DecodedToken {
     username?: string;
     email?: string;
     exp?: number;
+    role?: string;
     }
 
     export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
     const [username, setUsername] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     const loadUserFromToken = () => {
         const token = localStorage.getItem("token");
@@ -22,12 +24,15 @@ interface DecodedToken {
         try {
             const decoded: DecodedToken = jwtDecode(token);
             setUsername(decoded.sub || decoded.username || null);
+            setIsAdmin(decoded.role === "admin");
         } catch {
             console.warn("Invalid token");
             setUsername(null);
+            setIsAdmin(false);
         }
         } else {
         setUsername(null);
+        setIsAdmin(false);
         }
     };
 
@@ -50,6 +55,9 @@ interface DecodedToken {
             <Link to="/albums" className="nav-button">My Albums</Link>
             {username && (
             <Link to="/profile" className="nav-button">Profile</Link>
+            )}
+            {isAdmin && (
+            <Link to="/admin/dashboard" className="nav-button">Admin</Link>
             )}
 
             {!username ? (
