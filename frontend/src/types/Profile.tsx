@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import EditProfilePopup from "../components/EditProfilePopup";
 import InviteFriendsPopup from "../components/InviteFriendsPopup";
+import Notifications from "../components/Notifications";
 import PopupModal from "../components/PopupModal";
 
 interface ProfileType {
@@ -306,7 +307,6 @@ export default function ProfilePage() {
               />
             ))
           ) : null}
-
           {/* Album Invites */}
           {albumInvites.length ? (
             albumInvites.map(invite => (
@@ -316,7 +316,7 @@ export default function ProfilePage() {
                 <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
               </div>
             ))
-          ) : <p>No pending album invites</p>}
+          ) : null}
         </PopupModal>
       )}
 

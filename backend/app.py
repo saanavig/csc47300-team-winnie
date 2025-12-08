@@ -504,8 +504,6 @@ def set_album_cover(album_id):
 
     return jsonify({"message": "Album cover set", "coverUrl": cover_url}), 200
 
-
-# invite collaborator
 @app.route("/albums/<album_id>/invite", methods=["POST"])
 @jwt_required()
 def invite_collaborator(album_id):
@@ -522,6 +520,7 @@ def invite_collaborator(album_id):
     if not collaborator:
         return jsonify({"error": "User not found"}), 404
 
+    # Get the album entry for this user (the album owner)
     user = users_collection.find_one({"username": current_user}, {"albums": 1})
     if not user:
         return jsonify({"error": "User not found"}), 404
@@ -530,28 +529,50 @@ def invite_collaborator(album_id):
     if not album:
         return jsonify({"error": "Album not found"}), 404
 
-    if collaborator_username in album.get("collaborators", []):
+    collaborators = [str(c) for c in album.get("collaborators", [])]
+    requests = [str(r) for r in album.get("collaborator_requests", [])]
+
+    if collaborator_username in collaborators:
         return jsonify({"error": "User is already a collaborator"}), 400
 
-    # 1️⃣ Add to pending collaborator requests instead of collaborators
+    if collaborator_username in requests:
+        return jsonify({"error": "User already has a pending invite"}), 400
+
+    # Add pending request to the album object
     users_collection.update_one(
         {"username": current_user, "albums.id": album_id},
         {"$addToSet": {"albums.$.collaborator_requests": collaborator_username}}
     )
 
-    # 2️⃣ Add notification for invited user
+    # Add notification to invitee
     users_collection.update_one(
         {"username": collaborator_username},
-        {"$push": {"notifications": {
-            "type": "album_invite",
+        {"$push": {
+            "notifications": {
+                "type": "album_invite",
+                "album_id": album_id,
+                "album_title": album["title"],
+                "inviter": current_user,
+                "status": "pending",
+                "timestamp": datetime.utcnow()
+            }
+        }}
+    )
+
+    # persist invite so Accept/Decline endpoint can find it
+    try:
+        db.album_invites.insert_one({
             "album_id": album_id,
+            "invitee": collaborator_username,
             "inviter": current_user,
             "status": "pending",
             "timestamp": datetime.utcnow()
-        }}}
-    )
+        })
+    except Exception as e:
+        print("⚠️ Warning: failed to insert into album_invites:", e)
 
-    return jsonify({"message": f"You have successfully requested {collaborator_username} to be a collaborator!"}), 200
+    return jsonify({"message": f"You invited {collaborator_username}!"}), 200
+
 
 # remove collaborator (owner only)
 @app.route("/albums/<album_id>/remove-collaborator", methods=["POST"])
@@ -728,6 +749,65 @@ def get_notifications():
     )
     return jsonify({"notifications": user.get("notifications", [])}), 200
 
+# invite users to collaborate
+@app.route("/albums/invites", methods=["GET"])
+@jwt_required()
+def get_album_invites():
+    username = get_jwt_identity()
+
+    invites = list(db.album_invites.find({"invitee": username}))
+    formatted = []
+
+    for inv in invites:
+        album = db.albums.find_one({"_id": inv["album_id"]})
+        formatted.append({
+            "album_id": inv["album_id"],
+            "album_title": album.get("title") if album else "Unknown Album",
+            "inviter": inv.get("inviter")
+        })
+
+    return jsonify({"invites": formatted}), 200
+
+# accept/decline collab requests
+@app.route("/albums/<album_id>/invite/respond", methods=["POST"])
+@jwt_required()
+def respond_to_album_invite(album_id):
+    username = get_jwt_identity()
+    data = request.json
+    action = data.get("action")
+
+    invite = db.album_invites.find_one({
+        "album_id": album_id,
+        "invitee": username
+    })
+
+    if not invite:
+        return jsonify({"error": "Invite not found"}), 404
+
+    if action == "accept":
+        # Add to album contributors
+        db.albums.update_one(
+            {"_id": album_id},
+            {"$addToSet": {"contributors": username}}
+        )
+
+        # Remove invite
+        db.album_invites.delete_one({
+            "album_id": album_id,
+            "invitee": username
+        })
+
+        return jsonify({"message": "Invite accepted"}), 200
+
+    elif action == "decline":
+        db.album_invites.delete_one({
+            "album_id": album_id,
+            "invitee": username
+        })
+        return jsonify({"message": "Invite declined"}), 200
+
+    else:
+        return jsonify({"error": "Invalid action"}), 400
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000, threaded=True)
