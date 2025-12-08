@@ -62,13 +62,17 @@ export default function ProfilePage() {
         const json = await res.json();
         if (res.ok && json.profile) {
           const p = json.profile;
+          const avatarFromServer = p.avatarUrl;
+          const resolvedAvatar = avatarFromServer
+            ? (typeof avatarFromServer === "string" && avatarFromServer.startsWith("http")
+                ? avatarFromServer
+                : `http://127.0.0.1:5000${avatarFromServer}`)
+            : profile.avatar;
           setProfile((prev) => ({
             ...prev,
             name: p.username || prev.name,
             bio: p.bio ?? prev.bio,
-            avatar: p.avatarUrl
-              ? `http://127.0.0.1:5000${p.avatarUrl}`
-              : prev.avatar,
+            avatar: resolvedAvatar,
           }));
         }
       } catch (err) {
@@ -217,7 +221,13 @@ export default function ProfilePage() {
     useEffect(() => {
       fetch(`http://127.0.0.1:5000/users/${username}`)
         .then((res) => res.json())
-        .then((data) => { if (data.avatarUrl) setAvatar(`http://127.0.0.1:5000${data.avatarUrl}`); })
+        .then((data) => {
+          const raw = data.avatar || data.avatarUrl;
+          if (raw) {
+            const resolved = (typeof raw === "string" && raw.startsWith("http")) ? raw : `http://127.0.0.1:5000${raw}`;
+            setAvatar(resolved);
+          }
+        })
         .catch(() => {});
     }, [username]);
     return (
@@ -359,12 +369,15 @@ export default function ProfilePage() {
                 });
                 const result = await res.json();
                 if (res.ok) {
-                  const newAvatarUrl = result.avatarUrl ? "http://127.0.0.1:5000" + result.avatarUrl : profile.avatar;
-                  setProfile(prev => ({
-                    ...prev,
-                    bio: formData.get("bio") as string,
-                    avatar: formData.get("avatar") instanceof File ? newAvatarUrl : prev.avatar,
-                  }));
+                  // prefer server-returned values (avatarUrl / bio)
+                  let newAvatar = profile.avatar;
+                  if (result.avatarUrl) {
+                    newAvatar = typeof result.avatarUrl === "string" && result.avatarUrl.startsWith("http")
+                      ? result.avatarUrl
+                      : `http://127.0.0.1:5000${result.avatarUrl}`;
+                  }
+                  const newBio = result.bio ?? (formData.get("bio") as string) ?? profile.bio;
+                  setProfile(prev => ({ ...prev, bio: newBio, avatar: newAvatar }));
                   setNotification("Profile updated successfully!");
                   setShowPopup(null);
                 } else alert(result.error || "Failed to update profile");
