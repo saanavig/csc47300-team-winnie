@@ -451,13 +451,12 @@ export default function ProfilePage() {
                     <div className="album-menu-dropdown" onClick={(e) => e.stopPropagation()}>
                       <button className="dropdown-item" onClick={() => setShowPopup(inviteId)}>Invite Friends</button>
                       <button className="dropdown-item delete" onClick={() => alert("Delete album coming soon")}>Delete Album</button>
-                    </div>
-                  </div>
+                    </div> )}
+                </div>
                 </article>
               );
             })}
-          </div>
-        )}
+        </div>
       </section>
 
       {albums.map((album) => {
