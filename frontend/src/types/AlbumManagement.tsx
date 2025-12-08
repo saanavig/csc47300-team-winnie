@@ -175,13 +175,10 @@ export function AlbumManagement() {
                   <td>{album.owner}</td>
                   <td>
                     <div className="table__actions" style={{ justifyContent: 'center' }}>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(album)}>
-                        <Edit size={16} />
-                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(album)}>
                         <Trash2 size={16} />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => window.location.href = `http://localhost:5173/users/${album.owner}`}>
                         <Eye size={16} />
                       </Button>
                     </div>
