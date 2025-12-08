@@ -364,7 +364,18 @@ export default function ProfilePage() {
           {albumInvites.length ? (
             albumInvites.map(invite => (
               <div key={invite.album_id} className="notification-item">
-                {invite.inviter} invited you to collaborate on "{invite.album_title}"
+                <p><strong>{invite.inviter}</strong> has invited you to {invite.album_title}
+                  {/* <span
+                    className="clickable-album"
+                    style={{ color: "darkblue", textDecoration: "underline", cursor: "pointer" }}
+                    onClick={() => { 
+                      console.log("clicked", invite.album_id);
+                      handleAlbumClick(invite.album_id);
+                    }}
+                  >
+                    {invite.album_title}
+                  </span> */}
+                </p>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>Accept</button>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
               </div>

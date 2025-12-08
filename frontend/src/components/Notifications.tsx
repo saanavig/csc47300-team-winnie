@@ -122,13 +122,13 @@ const Notifications: React.FC<NotificationsProps> = ({
             {albumInvites.length
                 ? albumInvites.map((invite) => (
                         <div key={invite.album_id} className="notification-item">
-                            <span>
+                            {/* <span>
                                 <p>
                                     {invite.inviter} has invited you to
                                     {invite.album_title}
                                 </p>
                                 <strong>{invite.title || invite.album_id}</strong>
-                            </span>
+                            </span> */}
                             <button onClick={() => handleAcceptInvite(invite.album_id)}>Accept</button>
                             <button onClick={() => handleDeclineInvite(invite.album_id)}>Decline</button>
                         </div>
