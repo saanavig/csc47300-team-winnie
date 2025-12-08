@@ -3,7 +3,8 @@ import React from "react";
 interface AlbumInvite {
     album_id: string;
     inviter: string;
-    title?: string; // optional album title
+    title?: string; //just testng
+    album_title?: string; 
 }
 
 interface FriendRequest {
@@ -122,7 +123,10 @@ const Notifications: React.FC<NotificationsProps> = ({
                 ? albumInvites.map((invite) => (
                         <div key={invite.album_id} className="notification-item">
                             <span>
-                                {invite.inviter} invited you to{" "}
+                                <p>
+                                    {invite.inviter} has invited you to "
+                                    {invite.album_title}"
+                                </p>
                                 <strong>{invite.title || invite.album_id}</strong>
                             </span>
                             <button onClick={() => handleAcceptInvite(invite.album_id)}>Accept</button>

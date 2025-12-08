@@ -40,6 +40,7 @@ export default function ProfilePage() {
   });
 
   const [albums, setAlbums] = useState<Album[]>([]);
+  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -50,6 +51,7 @@ export default function ProfilePage() {
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
   const [notification, setNotification] = useState<string | null>(null);
+
 
   /** Fetch profile */
   useEffect(() => {
@@ -256,6 +258,11 @@ export default function ProfilePage() {
     );
   }
 
+  const handleAlbumClick = (albumId: string) => {
+  navigate(`/album/${albumId}`);
+};
+
+
   return (
     <div className="profile-page">
       <header className="profile-header">
@@ -420,7 +427,7 @@ export default function ProfilePage() {
             const popupId = `menu-${album.id}`;
             const inviteId = `invite-${album.id}`;
             return (
-              <article key={album.id || idx} className="album-card">
+              <article key={album.id || idx} className="album-card" onClick={() => handleAlbumClick(album.id!)}>
                 <div className="album-media">
                   <img src={album.cover} alt={album.title} />
                   <button
