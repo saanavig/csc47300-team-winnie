@@ -64,11 +64,13 @@ export default function PublicProfilePage() {
         setProfile({
           ...data,
           avatar: fixedAvatar,
-          albums: data.albums.map((a: any) => ({
-            title: a.title,
-            cover: a.coverUrl || "",
-            contributors: [],   // backend doesn’t support collaborators yet
-          })),
+          albums: (data.albums || [])
+            .filter((a: any) => (a.privacy ?? 'public') !== 'private')
+            .map((a: any) => ({
+              title: a.title,
+              cover: a.coverUrl || "",
+              contributors: [], // backend doesn’t support collaborators yet
+            })),
         });
 
 
