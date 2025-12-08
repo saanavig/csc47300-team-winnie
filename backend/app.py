@@ -837,7 +837,6 @@ def get_album_invites():
 
     return jsonify({"invites": formatted}), 200
 
-# accept/decline collab requests
 @app.route("/albums/<album_id>/invite/respond", methods=["POST"])
 @jwt_required()
 def respond_to_album_invite(album_id):
@@ -845,6 +844,7 @@ def respond_to_album_invite(album_id):
     data = request.json
     action = data.get("action")
 
+    # ✔ find invite  
     invite = db.album_invites.find_one({
         "album_id": album_id,
         "invitee": username
@@ -853,14 +853,32 @@ def respond_to_album_invite(album_id):
     if not invite:
         return jsonify({"error": "Invite not found"}), 404
 
+    # ✔ find album owner (because albums live inside user docs)
+    owner_doc = users_collection.find_one({"albums.id": album_id})
+    if not owner_doc:
+        return jsonify({"error": "Album not found"}), 404
+
+    # extract the album from owner_doc
+    album = next(a for a in owner_doc["albums"] if a["id"] == album_id)
+
     if action == "accept":
-        # Add to album contributors
-        db.albums.update_one(
-            {"_id": album_id},
-            {"$addToSet": {"contributors": username}}
+        # 1. add collaborator to the album
+        if username not in album.get("collaborators", []):
+            album.setdefault("collaborators", []).append(username)
+
+        # 2. update album inside owner doc
+        users_collection.update_one(
+            {"username": owner_doc["username"], "albums.id": album_id},
+            {"$set": {"albums.$": album}}
         )
 
-        # Remove invite
+        # 3. add album to accepting user's albums list
+        users_collection.update_one(
+            {"username": username},
+            {"$addToSet": {"albums": album}}
+        )
+
+        # 4. remove invite
         db.album_invites.delete_one({
             "album_id": album_id,
             "invitee": username

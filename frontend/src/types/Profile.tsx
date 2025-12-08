@@ -197,20 +197,47 @@ export default function ProfilePage() {
   /** Accept or decline album invite */
   const handleAlbumInvite = async (albumId: string, action: "accept" | "decline") => {
     if (!token) return;
+
     try {
       const res = await fetch(`http://127.0.0.1:5000/albums/${albumId}/invite/respond`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ action }),
       });
+
       const result = await res.json();
-      alert(result.message || result.error);
-      setAlbumInvites(prev => prev.filter(inv => inv.album_id !== albumId));
+
+      if (!res.ok) {
+        alert(result.error || "Something went wrong.");
+        return;
+      }
+
+      alert(result.message);
+
+      // Remove invite from notifications UI
+      setAlbumInvites((prev) => prev.filter((inv) => inv.album_id !== albumId));
+
+      // If accepted → refresh album lists so it appears immediately
+      if (action === "accept") {
+        const res2 = await fetch("http://127.0.0.1:5000/albums/user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data2 = await res2.json();
+
+        if (res2.ok && data2.albums) {
+          setAlbums(data2.albums);
+        }
+      }
     } catch (err) {
-      console.error(err);
-      alert("❌ Network error.");
+      console.error("Invite error:", err);
+      alert("Network error.");
     }
   };
+
 
   /** Toggle follow/unfollow locally */
   const toggleFollow = () => setIsFollowing(prev => !prev);
