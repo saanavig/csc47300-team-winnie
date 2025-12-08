@@ -364,14 +364,14 @@ export default function ProfilePage() {
           {albumInvites.length ? (
             albumInvites.map(invite => (
               <div key={invite.album_id} className="notification-item">
-                <p><strong>{invite.inviter}</strong> has invited you to{" "}
-                    <span
+                <p><strong>{invite.inviter}</strong> has invited you to {invite.album_title}
+                    {/* <span
                       className="clickable-album"
                       style={{color: "darkblue", textDecoration: "underline", cursor: "pointer" }}
                         onClick={() => handleAlbumClick(invite.album_id)}
                       >
                       {invite.album_title}
-                    </span>
+                    </span> */}
                 </p>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>Accept</button>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
