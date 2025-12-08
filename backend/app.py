@@ -619,6 +619,7 @@ def invite_collaborator(album_id):
     try:
         db.album_invites.insert_one({
             "album_id": album_id,
+            "album_title": album["title"],
             "invitee": collaborator_username,
             "inviter": current_user,
             "status": "pending",
