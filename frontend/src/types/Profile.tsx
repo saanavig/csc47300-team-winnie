@@ -148,7 +148,15 @@ export default function ProfilePage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();
-        if (res.ok) setAlbumInvites(json.invites || []);
+        if (res.ok) {
+          setAlbumInvites(
+            (json.invites || []).map((inv: any) => ({
+              album_id: inv.album_id,
+              album_title: inv.album_title,
+              inviter: inv.inviter
+            }))
+          );
+        }
       } catch (err) {
         console.error("Failed to fetch album invites:", err);
       }
@@ -379,7 +387,9 @@ export default function ProfilePage() {
       <div className="tabs-bar"><button className="tab active">My Albums</button></div>
       <section className="profile-albums">
         <div className="albums-grid">
-          {albums.map((album, idx) => {
+          {[...albums]
+            .reverse()
+            .map((album, idx) => {
             const popupId = `menu-${album.id}`;
             const inviteId = `invite-${album.id}`;
             return (
