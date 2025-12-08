@@ -700,7 +700,7 @@ def list_public_albums():
         except:
             pass
 
-        users = users_collection.find({}, {"_id": 0, "albums": 1, "username":1})
+        users = users_collection.find({}, {"_id": 0, "albums": 1, "username": 1, "avatarUrl": 1})
         public_albums = []
 
         for user in users:
@@ -714,6 +714,7 @@ def list_public_albums():
                         "title": album["title"],
                         "img": album.get("coverUrl", ""),
                         "owner": user["username"],
+                        "ownerAvatar": user.get("avatarUrl", ""),
                         "joined": current_user in album.get("collaborators", []) if current_user else False
                     })
 
