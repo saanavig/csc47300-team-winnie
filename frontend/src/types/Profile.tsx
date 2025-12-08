@@ -51,7 +51,7 @@ export default function ProfilePage() {
     { album_id: string; album_title: string; inviter: string }[]
   >([]);
   const [notification, setNotification] = useState<string | null>(null);
-
+  const [notifMessage, setNotifMessage] = useState<string | null>(null);
 
   /** Fetch profile */
   useEffect(() => {
@@ -356,6 +356,7 @@ export default function ProfilePage() {
                 username={req}
                 token={token}
                 onRemove={() => setFriendRequests(prev => prev.filter(r => r !== req))}
+                setNotifMessage={setNotifMessage}
               />
             ))
           ) : null}
@@ -363,7 +364,18 @@ export default function ProfilePage() {
           {albumInvites.length ? (
             albumInvites.map(invite => (
               <div key={invite.album_id} className="notification-item">
-                {invite.inviter} invited you to collaborate on "{invite.album_title}"
+                <p><strong>{invite.inviter}</strong> has invited you to {invite.album_title}
+                  {/* <span
+                    className="clickable-album"
+                    style={{ color: "darkblue", textDecoration: "underline", cursor: "pointer" }}
+                    onClick={() => { 
+                      console.log("clicked", invite.album_id);
+                      handleAlbumClick(invite.album_id);
+                    }}
+                  >
+                    {invite.album_title}
+                  </span> */}
+                </p>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "accept")}>Accept</button>
                 <button onClick={() => handleAlbumInvite(invite.album_id, "decline")}>Decline</button>
               </div>
@@ -495,7 +507,18 @@ function AddFriendPopup({ onAdd }: { onAdd: (username: string) => Promise<string
 }
 
 /** Friend Request Item */
-function FriendRequestItem({ username, token, onRemove }: { username: string; token: string | null; onRemove: () => void }) {
+function FriendRequestItem({
+  username,
+  token,
+  onRemove,
+  setNotifMessage
+}: {
+  username: string;
+  token: string | null;
+  onRemove: () => void;
+  setNotifMessage: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
+
   const handleResponse = async (action: string) => {
     try {
       const res = await fetch("http://127.0.0.1:5000/friends/respond", {
@@ -504,9 +527,21 @@ function FriendRequestItem({ username, token, onRemove }: { username: string; to
         body: JSON.stringify({ username, action }),
       });
       const result = await res.json();
-      alert(result.message || result.error);
-      onRemove();
-    } catch { alert("❌ Network error."); }
+
+      if (res.ok) {
+        // Show message in notifications popup
+        setNotifMessage(result.message || "Action successful!");
+        setTimeout(() => setNotifMessage(null), 2000); // auto-hide after 2s
+        onRemove();
+      } else {
+        setNotifMessage(result.error || "Something went wrong");
+        setTimeout(() => setNotifMessage(null), 2000);
+      }
+
+    } catch {
+      setNotifMessage("❌ Network error");
+      setTimeout(() => setNotifMessage(null), 2000);
+    }
   };
 
   return (
