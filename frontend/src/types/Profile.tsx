@@ -399,39 +399,46 @@ export default function ProfilePage() {
       {/* Albums */}
       <div className="tabs-bar"><button className="tab active">My Albums</button></div>
       <section className="profile-albums">
-        <div className="albums-grid">
-          {[...albums]
-            .reverse()
-            .map((album, idx) => {
-            const popupId = `menu-${album.id}`;
-            const inviteId = `invite-${album.id}`;
-            return (
-              <article key={album.id || idx} className="album-card">
-                <div className="album-media">
-                  <img src={album.cover} alt={album.title} />
-                  <button
-                    className="album-menu-btn"
-                    onClick={(e) => { e.stopPropagation(); setShowPopup(popupId); }}
-                  >⋮</button>
-                  {showPopup === popupId && (
-                    <div className="album-menu-dropdown" onClick={(e) => e.stopPropagation()}>
-                      <button className="dropdown-item" onClick={() => setShowPopup(inviteId)}>Invite Friends</button>
-                      <button className="dropdown-item delete" onClick={() => alert("Delete album coming soon")}>Delete Album</button>
-                    </div>
-                  )}
-                </div>
-                <div className="album-meta">
-                  <h3 className="album-title">{album.title}</h3>
-                  <div className="album-avatars">
-                    {album.contributors.slice(0, 3).map((c, i) => (
-                      <img key={i} src={c.avatar} alt={c.name} title={c.name} className="album-avatar" />
-                    ))}
+        {!token ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
+            <p>Please log in to view your albums</p>
+            <Link to="/login" style={{ color: '#0066cc', textDecoration: 'none', fontWeight: 'bold' }}>Go to Login</Link>
+          </div>
+        ) : (
+          <div className="albums-grid">
+            {[...albums]
+              .reverse()
+              .map((album, idx) => {
+              const popupId = `menu-${album.id}`;
+              const inviteId = `invite-${album.id}`;
+              return (
+                <article key={album.id || idx} className="album-card">
+                  <div className="album-media">
+                    <img src={album.cover} alt={album.title} />
+                    <button
+                      className="album-menu-btn"
+                      onClick={(e) => { e.stopPropagation(); setShowPopup(popupId); }}
+                    >⋮</button>
+                    {showPopup === popupId && (
+                      <div className="album-menu-dropdown" onClick={(e) => e.stopPropagation()}>
+                        <button className="dropdown-item" onClick={() => setShowPopup(inviteId)}>Invite Friends</button>
+                        <button className="dropdown-item delete" onClick={() => alert("Delete album coming soon")}>Delete Album</button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                  <div className="album-meta">
+                    <h3 className="album-title">{album.title}</h3>
+                    <div className="album-avatars">
+                      {album.contributors.slice(0, 3).map((c, i) => (
+                        <img key={i} src={c.avatar} alt={c.name} title={c.name} className="album-avatar" />
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {albums.map((album) => {

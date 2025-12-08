@@ -53,10 +53,12 @@ export default function PublicProfilePage() {
         } else {
           const data = await res.json();
           
-          const fixedAvatar = data.avatarUrl
-            ? (typeof data.avatarUrl === "string" && data.avatarUrl.startsWith("http")
-                ? data.avatarUrl
-                : `http://127.0.0.1:5000${data.avatarUrl}`)
+          // backend may return avatar under `avatar` or `avatarUrl` — accept either
+          const rawAvatar = data.avatar || data.avatarUrl;
+          const fixedAvatar = rawAvatar
+            ? (typeof rawAvatar === "string" && rawAvatar.startsWith("http")
+                ? rawAvatar
+                : `http://127.0.0.1:5000${rawAvatar}`)
             : "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=600&auto=format&fit=crop";
 
         setProfile({
