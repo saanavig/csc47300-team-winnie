@@ -1,7 +1,8 @@
+import '../styles/layout.css';
+
+import { Layout } from '../components/Layout';
 /*Part of Admin Interface*/
 import React from 'react';
-import { Layout } from '../components/Layout';
-import '../styles/layout.css';
 
 export function UserManagement() {
   return (

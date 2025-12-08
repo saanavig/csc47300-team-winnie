@@ -1,12 +1,14 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { Edit, Trash2, Eye } from 'lucide-react';
-import { Layout } from '../components/Layout';
-import { Badge } from '../components/Badges';
-import { Button } from '../components/Button';
-import { Modal } from '../components/Modal';
 import '../styles/Filters.css';
 import '../styles/Table.css';
+
+import { Edit, Eye, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { Badge } from '../components/Badges';
+import { Button } from '../components/Button';
+import { Layout } from '../components/Layout';
+import { Modal } from '../components/Modal';
+import React from 'react';
 
 interface Album {
   id: string;
@@ -24,6 +26,13 @@ export function AlbumManagement() {
   const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+
+  // filters
+    const [searchText, setSearchText] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [albumFilter, setAlbumFilter] = useState('');
+    const [privacyFilter, setPrivacyFilter] = useState('');
+    const [dateSort, setDateSort] = useState('');
 
   useEffect(() => {
     fetchAlbums();
@@ -100,41 +109,84 @@ export function AlbumManagement() {
     }
   };
 
+
+  const filteredAlbums = albums
+  .filter(album => {
+    const matchesSearch = searchText
+      ? album.name.toLowerCase().includes(searchText.toLowerCase())
+      : true;
+
+    // const matchesStatus = statusFilter
+    //   ? album.photoCount.toString() === statusFilter // optional, or skip if not applicable
+    //   : true;
+
+    const matchesAlbum = albumFilter
+      ? album.name.toLowerCase() === albumFilter.toLowerCase()
+      : true;
+
+    const matchesPrivacy = privacyFilter
+      ? album.privacy === privacyFilter
+      : true;
+
+    return matchesSearch && matchesAlbum && matchesPrivacy;
+  })
+  .sort((a, b) => {
+    if (dateSort === 'newest') return new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (dateSort === 'oldest') return new Date(a.date).getTime() - new Date(b.date).getTime();
+    return 0;
+  });
+
   return (
     <Layout>
       <div className="page-header">
         <h1 className="page-header__title">Album Management</h1>
       </div>
 
-      <div className="filters">
-        <div className="filters__search">
-          <input 
-            type="text" 
-            className="input" 
-            placeholder="Search (titles/tags)" 
-          />
-        </div>
-        <div className="filters__group">
-          <select className="select">
-            <option value="">Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <select className="select">
-            <option value="">Privacy</option>
-            <option value="public">Public</option>
-            <option value="shared">Shared</option>
-            <option value="private">Private</option>
-          </select>
-          <select className="select">
-            <option value="">Photo Count</option>
-            <option value="high">Most Photos</option>
-            <option value="low">Least Photos</option>
-          </select>
-          <Button variant="ghost" size="sm">Clear</Button>
-        </div>
-      </div>
+            <div className="filters">
+              <div className="filters__search">
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Search (titles/tags)"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+              </div>
+              <div className="filters__group">
+                <select 
+                  className="select"
+                  value={privacyFilter}
+                  onChange={(e) => setPrivacyFilter(e.target.value)}
+                >
+                  <option value="">Privacy</option>
+                  <option value="public">Public</option>
+                  <option value="shared">Shared</option>
+                  <option value="private">Private</option>
+                </select>
+                <select
+                  className="select"
+                  value={dateSort}
+                  onChange={(e) => setDateSort(e.target.value)}
+                >
+                  <option value="">Date</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchText('');
+                    setStatusFilter('');
+                    setAlbumFilter('');
+                    setPrivacyFilter('');
+                    setDateSort('');
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
 
       <div className="table-container">
         <table className="table">
@@ -155,14 +207,14 @@ export function AlbumManagement() {
                   Loading albums...
                 </td>
               </tr>
-            ) : albums.length === 0 ? (
+            ) : filteredAlbums.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: '20px' }}>
                   No albums found
                 </td>
               </tr>
             ) : (
-              albums.map((album) => (
+              filteredAlbums.map((album) => (
                 <tr key={album.id}>
                   <td>{album.name}</td>
                   <td>{album.photoCount} photos</td>

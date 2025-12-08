@@ -1,13 +1,15 @@
+import '../styles/Filters.css';
+import '../styles/Table.css';
+
+import { Edit, Eye, Trash2 } from 'lucide-react';
+
+import { Badge } from '../components/Badges';
+import { Button } from '../components/Button';
+import { Layout } from '../components/Layout';
+import { Modal } from '../components/Modal';
 /*Part of Admin Interface*/
 import React from 'react';
 import { useState } from 'react';
-import { Edit, Trash2, Eye } from 'lucide-react';
-import { Layout } from '../components/Layout';
-import { Badge } from '../components/Badges';
-import { Button } from '../components/Button';
-import { Modal } from '../components/Modal';
-import '../styles/Filters.css';
-import '../styles/Table.css';
 
 const photos = [
   { id: 1, thumbnail: 'https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3Vuc2V0fGVufDB8fDB8fHww', tags: ['nature', 'sunset'], album: 'Landscapes', date: '12/05/2024', status: 'active' as const },
@@ -20,6 +22,14 @@ export function PhotoManagement() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<typeof photos[0] | null>(null);
 
+  // filters
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [albumFilter, setAlbumFilter] = useState('');
+  const [privacyFilter, setPrivacyFilter] = useState('');
+  const [dateSort, setDateSort] = useState('');
+
+
   const handleEdit = (photo: typeof photos[0]) => {
     setSelectedPhoto(photo);
     setEditModal(true);
@@ -30,6 +40,34 @@ export function PhotoManagement() {
     setDeleteModal(true);
   };
 
+const filteredPhotos = photos
+  .filter(photo => {
+    const matchesSearch = searchText
+  ? (photo.tags.join(' ').toLowerCase().includes(searchText.toLowerCase()) ||
+      photo.album.toLowerCase().includes(searchText.toLowerCase()))
+      : true;
+
+
+    const matchesAlbum = albumFilter
+      ? photo.album.toLowerCase() === albumFilter.toLowerCase()
+      : true;
+
+    const matchesStatus = statusFilter
+      ? photo.status === statusFilter
+      : true;
+
+    // const matchesPrivacy = privacyFilter
+    //   ? privacyFilter === photo.privacy
+    //   : true;
+
+    return matchesSearch && matchesAlbum && matchesStatus;
+  })
+  .sort((a, b) => {
+    if (dateSort === 'newest') return new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (dateSort === 'oldest') return new Date(a.date).getTime() - new Date(b.date).getTime();
+    return 0;
+  });
+
   return (
     <Layout>
       <div className="page-header">
@@ -38,37 +76,47 @@ export function PhotoManagement() {
 
       <div className="filters">
         <div className="filters__search">
-          <input 
-            type="text" 
-            className="input" 
-            placeholder="Search (titles/tags)" 
+          <input
+            type="text"
+            className="input"
+            placeholder="Search (titles/tags)"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
         <div className="filters__group">
-          <select className="select">
-            <option value="">Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <select className="select">
-            <option value="">Album</option>
-            <option value="landscapes">Landscapes</option>
-            <option value="travel">Travel</option>
-            <option value="nature">Nature</option>
-          </select>
-          <select className="select">
+          <select 
+            className="select"
+            value={privacyFilter}
+            onChange={(e) => setPrivacyFilter(e.target.value)}
+          >
             <option value="">Privacy</option>
             <option value="public">Public</option>
             <option value="shared">Shared</option>
             <option value="private">Private</option>
           </select>
-          <select className="select">
+          <select
+            className="select"
+            value={dateSort}
+            onChange={(e) => setDateSort(e.target.value)}
+          >
             <option value="">Date</option>
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
           </select>
-          <Button variant="ghost" size="sm">Clear</Button>
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchText('');
+              setStatusFilter('');
+              setAlbumFilter('');
+              setPrivacyFilter('');
+              setDateSort('');
+            }}
+          >
+            Clear
+          </Button>
         </div>
       </div>
 
@@ -85,34 +133,42 @@ export function PhotoManagement() {
             </tr>
           </thead>
           <tbody>
-            {photos.map((photo) => (
-              <tr key={photo.id}>
-                <td>
-                  <img src={photo.thumbnail} alt="" className="table__thumbnail" />
-                </td>
-                <td>{photo.tags.join(', ')}</td>
-                <td>{photo.album}</td>
-                <td>{photo.date}</td>
-                <td>
-                  <Badge variant={photo.status}>
-                    {photo.status.charAt(0).toUpperCase() + photo.status.slice(1)}
-                  </Badge>
-                </td>
-                <td>
-                  <div className="table__actions">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(photo)}>
-                      <Edit size={16} />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(photo)}>
-                      <Trash2 size={16} />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Eye size={16} />
-                    </Button>
-                  </div>
+            {filteredPhotos.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '20px' }}>
+                  No photos found
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredPhotos.map((photo) => (
+                <tr key={photo.id}>
+                  <td>
+                    <img src={photo.thumbnail} alt="" className="table__thumbnail" />
+                  </td>
+                  <td>{photo.tags.join(', ')}</td>
+                  <td>{photo.album}</td>
+                  <td>{photo.date}</td>
+                  <td>
+                    <Badge variant={photo.status}>
+                      {photo.status.charAt(0).toUpperCase() + photo.status.slice(1)}
+                    </Badge>
+                  </td>
+                  <td>
+                    <div className="table__actions">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(photo)}>
+                        <Edit size={16} />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(photo)}>
+                        <Trash2 size={16} />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Eye size={16} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
