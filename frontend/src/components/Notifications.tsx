@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AlbumInvite {
     album_id: string;
@@ -98,7 +99,13 @@ const Notifications: React.FC<NotificationsProps> = ({
         }
     };
 
-    // DEBUG: check albumInvites for missing album_id
+    const navigate = useNavigate();
+
+    const handleAlbumClick = (albumId: string | undefined) => {
+        if (!albumId) return;
+        navigate(`/album/${albumId}`);
+    };
+
     React.useEffect(() => {
         albumInvites.forEach(invite => {
             if (!invite.album_id) console.warn("Missing album_id in invite:", invite);
@@ -122,13 +129,16 @@ const Notifications: React.FC<NotificationsProps> = ({
             {albumInvites.length
                 ? albumInvites.map((invite) => (
                         <div key={invite.album_id} className="notification-item">
-                            {/* <span>
-                                <p>
-                                    {invite.inviter} has invited you to
+                            {/* <p>
+                                <strong>{invite.inviter}</strong> has invited you to{" "}
+                                <span
+                                    className="clickable-album"
+                                    style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
+                                    onClick={() => handleAlbumClick(invite.album_id)}
+                                >
                                     {invite.album_title}
-                                </p>
-                                <strong>{invite.title || invite.album_id}</strong>
-                            </span> */}
+                                </span>
+                            </p> */}
                             <button onClick={() => handleAcceptInvite(invite.album_id)}>Accept</button>
                             <button onClick={() => handleDeclineInvite(invite.album_id)}>Decline</button>
                         </div>
